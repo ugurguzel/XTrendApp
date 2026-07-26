@@ -1,0 +1,87 @@
+﻿@model XTrendApp.Web.Models.User.UserProfileViewModel
+
+@{
+    ViewData["Title"] = "My Profile";
+}
+
+<div class="row justify-content-center">
+
+    <div class="col-lg-6">
+
+        <div class="card">
+
+            <div class="card-header">
+
+                <h3 class="card-title">
+                    My Profile
+                </h3>
+
+            </div>
+
+            <div class="card-body">
+
+                @if (TempData["Success"] != null)
+                {
+                    <div class="alert alert-success">
+
+                        @TempData["Success"]
+
+                    </div>
+                }
+
+                <form asp-action="Profile"
+                      method="post">
+
+                    @Html.AntiForgeryToken()
+
+                    <input asp-for="Id" type="hidden" />
+
+                    <div class="mb-3">
+
+                        <label asp-for="Username"
+                               class="form-label"></label>
+
+                        <input asp-for="Username"
+                               class="form-control"
+                               readonly
+                               style="background-color:#f5f7fb;cursor:not-allowed;" />
+
+                    </div>
+
+                    <div class="mb-3">
+
+                        <label asp-for="FullName"
+                               class="form-label"></label>
+
+                        <input asp-for="FullName"
+                               class="form-control" />
+
+                    </div>
+
+                    <div class="mb-4">
+
+                        <label asp-for="Email"
+                               class="form-label"></label>
+
+                        <input asp-for="Email"
+                               class="form-control" />
+
+                    </div>
+
+                    <button class="btn btn-primary">
+
+                        <i class="ti ti-device-floppy me-2"></i>
+
+                        Save Changes
+
+                    </button>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

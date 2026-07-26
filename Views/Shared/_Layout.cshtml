@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - XTrendApp</title>
+    <script type="importmap"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@@tabler/core@1.4.0/dist/css/tabler.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@@tabler/icons-webfont@3.35.0/dist/tabler-icons.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tabulator-tables@6.3.1/dist/css/tabulator_bootstrap5.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/XTrendApp.Web.styles.css" asp-append-version="true" />
+</head>
+<body data-bs-theme="light">
+    <div class="page">
+        <aside class="navbar navbar-vertical navbar-expand-lg" data-bs-theme="dark">
+            <div class="container-fluid">
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#sidebar-menu" aria-controls="sidebar-menu" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <h1 class="navbar-brand navbar-brand-autodark">
+                    <a asp-area="" asp-controller="Home" asp-action="Index" class="text-decoration-none">
+                        <span class="navbar-brand-image avatar avatar-sm bg-primary-lt text-primary">XT</span>
+                        <span class="ms-2">XTrendApp</span>
+                    </a>
+                </h1>
+                <div class="collapse navbar-collapse" id="sidebar-menu">
+                    <ul class="navbar-nav pt-lg-3">
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">
+                                <span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-layout-dashboard"></i></span>
+                                <span class="nav-link-title">Dashboard</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link"
+                               asp-controller="Product"
+                               asp-action="Index">
+
+                                <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                    <i class="ti ti-package"></i>
+                                </span>
+
+                                <span class="nav-link-title">
+                                    Products
+                                </span>
+
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-building-store"></i></span>
+                                <span class="nav-link-title">Marketplaces</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-users-group"></i></span>
+                                <span class="nav-link-title">Competitors</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-camera"></i></span>
+                                <span class="nav-link-title">Snapshots</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-chart-line"></i></span>
+                                <span class="nav-link-title">Reports</span>
+                            </a>
+                        </li>
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item dropdown">
+
+                                <a class="nav-link dropdown-toggle"
+                                   href="#navbar-administration"
+                                   data-bs-toggle="dropdown"
+                                   data-bs-auto-close="false">
+
+                                    <span class="nav-link-icon">
+                                        <i class="ti ti-shield-lock"></i>
+                                    </span>
+
+                                    <span class="nav-link-title">
+
+                                        Administration
+
+                                    </span>
+
+                                </a>
+
+                                <div class="dropdown-menu">
+
+                                    <a class="dropdown-item"
+                                       asp-controller="User"
+                                       asp-action="Index">
+
+                                        Users
+
+                                    </a>
+
+                                    <a class="dropdown-item"
+                                       asp-controller="Connector"
+                                       asp-action="Index">
+
+                                        Connectors
+
+                                    </a>
+
+                                    <a class="dropdown-item"
+                                       asp-controller="ScanJob"
+                                       asp-action="Index">
+
+                                        Scan Jobs
+
+                                    </a>
+
+
+                                </div>
+
+                            </li>
+                        }
+                        <li class="nav-item mt-lg-auto">
+                            <a class="nav-link" href="#">
+                                <span class="nav-link-icon d-md-none d-lg-inline-block"><i class="ti ti-settings"></i></span>
+                                <span class="nav-link-title">Settings</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </aside>
+
+        <div class="page-wrapper">
+            <header class="navbar navbar-expand-md d-print-none">
+                <div class="container-xl">
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-menu" aria-controls="navbar-menu" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="navbar-nav flex-row order-md-last ms-auto">
+                        <div class="nav-item d-none d-md-flex me-3">
+                            <div class="input-icon">
+                                <span class="input-icon-addon"><i class="ti ti-search"></i></span>
+                                <input type="text" class="form-control" placeholder="Search..." aria-label="Search">
+                            </div>
+                        </div>
+                        <a href="#" class="nav-link px-2" title="Notifications" data-bs-toggle="tooltip">
+                            <i class="ti ti-bell"></i>
+                        </a>
+                        <div class="nav-item dropdown">
+
+                            <a href="#"
+                               class="nav-link d-flex lh-1 text-reset p-0"
+                               data-bs-toggle="dropdown"
+                               aria-expanded="false">
+
+                                @{
+                                    var fullName = User.FindFirst("FullName")?.Value ?? User.Identity?.Name ?? "";
+
+                                    var initials = "";
+
+                                    if (!string.IsNullOrWhiteSpace(fullName))
+                                    {
+                                        var parts = fullName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+                                        if (parts.Length == 1)
+                                        {
+                                            initials = parts[0].Substring(0, 1).ToUpper();
+                                        }
+                                        else
+                                        {
+                                            initials =
+                                            parts[0].Substring(0, 1).ToUpper() +
+                                            parts[^1].Substring(0, 1).ToUpper();
+                                        }
+                                    }
+                                }
+
+                                <span class="avatar avatar-sm bg-primary-lt text-primary">
+                                    @initials
+                                </span>
+
+                                <div class="d-none d-xl-block ps-2">
+
+                                    <div class="fw-semibold">   
+
+                                        @User.FindFirst("FullName")?.Value
+
+                                    </div>
+
+                                    <div class="small text-secondary">
+
+                                        @(User.IsInRole("Admin")
+                                                                                ? "Administrator"
+                                                                                : "Standard User")
+
+                                    </div>
+
+                                </div>
+
+                            </a>
+
+                            <div class="dropdown-menu dropdown-menu-end">
+
+                                <div class="dropdown-header">
+
+                                    Signed in as
+
+                                    <div class="fw-bold">
+
+                                        @User.Identity?.Name
+
+                                    </div>
+
+                                    <div class="dropdown-item-text small">
+
+                                        <strong>Last Login</strong>
+
+                                        <br />
+
+                                        @User.FindFirst("LastLogin")?.Value
+
+                                    </div>
+
+                                </div>
+
+                                <a asp-controller="Account"
+                                   asp-action="Profile"
+                                   class="dropdown-item">
+
+                                    <i class="ti ti-user me-2"></i>
+
+                                    My Profile
+
+                                </a>
+
+                                <a href="#"
+                                   class="dropdown-item"
+                                   data-bs-toggle="modal"
+                                   data-bs-target="#myPasswordModal">
+
+                                    <i class="ti ti-lock me-2"></i>
+
+                                    Change Password
+
+                                </a>
+
+                                <div class="dropdown-divider"></div>
+
+                                <form asp-controller="Account"
+                                      asp-action="Logout"
+                                      method="post">
+
+                                    @Html.AntiForgeryToken()
+
+                                    <button type="submit"
+                                            class="dropdown-item text-danger">
+
+                                        <i class="ti ti-logout me-2"></i>
+
+                                        Logout
+
+                                    </button>
+
+                                </form>
+
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="collapse navbar-collapse" id="navbar-menu">
+                        <div class="d-flex flex-column flex-md-row flex-fill align-items-stretch align-items-md-center">
+                            <div class="page-pretitle">
+
+                                Welcome back,
+
+                                <strong>
+
+                                    @User.FindFirst("FullName")?.Value
+
+                                </strong>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="page-body">
+                <div class="container-xl">
+                    <main role="main">
+                        @RenderBody()
+
+                        <partial name="_MyPasswordModal"
+                                 model="new XTrendApp.Web.Models.User.ChangeMyPasswordViewModel()" />
+
+                    </main>
+                </div>
+            </div>
+
+            <footer class="footer footer-transparent d-print-none">
+                <div class="container-xl">
+                    <div class="row text-center align-items-center flex-row-reverse">
+                        <div class="col-12 col-lg-auto mt-3 mt-lg-0">
+                            <ul class="list-inline list-inline-dots mb-0">
+                                <li class="list-inline-item">&copy; 2026 XTrendApp</li>
+                                <li class="list-inline-item">English</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/@@tabler/core@1.4.0/dist/js/tabler.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/tabulator-tables@6.3.1/dist/js/tabulator.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+
+</body>
+</html>

@@ -1,0 +1,24 @@
+bin/
+obj/
+.vs/
+.dotnet/
+*.user
+*.suo
+wwwroot/uploads/
+appsettings.Development.json
+App_Data/DataProtectionKeys/
+server.*.log
+appsettings.json
+
+# Browser Profiles
+App_Data/BrowserProfiles/
+
+# Sessions
+App_Data/Sessions/
+
+# Playwright
+playwright-report/
+test-results/
+
+# Logs
+*.log

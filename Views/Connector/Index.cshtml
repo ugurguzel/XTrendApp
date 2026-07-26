@@ -1,0 +1,96 @@
+﻿
+
+@{
+    ViewData["Title"] = "Connectors";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+
+    <div>
+
+        <h2 class="page-title">
+            Connectors
+        </h2>
+
+        <div class="text-secondary">
+            Marketplace connector management
+        </div>
+
+    </div>
+
+</div>
+
+<div class="card">
+
+    <div class="table-responsive">
+
+        <table class="table table-vcenter">
+
+            <thead>
+
+                <tr>
+
+                    <th>Marketplace</th>
+
+                    <th>Session</th>
+
+                    <th>Last Run</th>
+
+                    <th style="width:180px;"></th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                @foreach (var item in Model)
+                {
+                    <tr>
+
+                        <td>@item.Name</td>
+
+                        <td>
+
+                            @if (item.HasSession)
+                            {
+                                <span class="badge bg-success">
+                                    Ready
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger">
+                                    Missing
+                                </span>
+                            }
+
+                        </td>
+
+                        <td>
+
+                            @(item.LastRun?.ToString("dd.MM.yyyy HH:mm") ?? "-")
+
+                        </td>
+
+                        <td>
+
+                            <button class="btn btn-primary btn-configure"
+                                    data-code="@item.Code">
+
+                                Configure
+
+                            </button>
+
+                        </td>
+
+                    </tr>
+                }
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>

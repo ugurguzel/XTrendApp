@@ -1,0 +1,167 @@
+﻿@model IEnumerable<XTrendApp.Web.Models.User.UserModel>
+
+@{
+    ViewData["Title"] = "Users";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h2 class="page-title">Users</h2>
+        <div class="text-secondary">
+            System user management
+        </div>
+    </div>
+
+    <a href="#"
+       id="btnAddUser"
+       class="btn btn-primary"
+       data-bs-toggle="modal"
+       data-bs-target="#userModal">
+
+        <i class="ti ti-plus"></i>
+
+        Add User
+
+    </a>
+</div>
+
+<div class="card">
+
+    <div class="table-responsive">
+
+        <table class="table table-vcenter">
+
+            <thead>
+
+                <tr>
+
+                    <th>Username</th>
+
+                    <th>Full Name</th>
+
+                    <th>Email</th>
+
+                    <th>Admin</th>
+
+                    <th>Active</th>
+
+                    <th>Last Login</th>
+
+                    <th style="width:120px;"></th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                @foreach (var item in Model)
+                {
+                    <tr>
+
+                        <td>@item.Username</td>
+
+                        <td>@item.FullName</td>
+
+                        <td>@item.Email</td>
+
+                        <td>
+
+                            @if (item.IsAdmin)
+                            {
+                                <span class="badge bg-blue">
+                                    Admin
+                                </span>
+                            }
+
+                        </td>
+
+                        <td>
+
+                            @if (item.IsActive)
+                            {
+                                <span class="badge bg-success status-badge">
+                                    Active
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger status-badge">
+                                    Passive
+                                </span>
+                            }
+
+                        </td>
+
+                        <td>
+
+                            @(item.LastLogin?.ToString("dd.MM.yyyy HH:mm") ?? "-")
+
+                        </td>
+
+                        <td>
+
+                            <button class="btn btn-sm btn-outline-primary btn-edit"
+                                    data-id="@item.Id"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#userModal">
+
+                                Edit
+
+                            </button>
+
+                            <button class="btn btn-sm btn-outline-warning btn-password"
+                                    data-id="@item.Id"
+                                    data-name="@item.Username"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#passwordModal">
+
+                                Password
+
+                            </button>
+
+                            @if (item.IsActive)
+                            {
+                                <button class="btn btn-sm btn-outline-danger btn-delete"
+                                        data-id="@item.Id"
+                                        data-name="@item.Username">
+
+                                    Deactivate
+
+                                </button>
+                            }
+                            else
+                            {
+                                <button class="btn btn-sm btn-outline-success btn-activate"
+                                        data-id="@item.Id"
+                                        data-name="@item.Username">
+
+                                    Activate
+
+                                </button>
+                            }
+
+                        </td>
+
+                    </tr>
+                }
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+<partial name="_CreateUserModal"
+         model="new XTrendApp.Web.Models.User.UserCreateViewModel()" />
+
+<partial name="_ChangePasswordModal"
+         model="new XTrendApp.Web.Models.User.UserPasswordViewModel()" />
+
+
+@section Scripts
+{
+    <script src="~/js/user.js"></script>
+}

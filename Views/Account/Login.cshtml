@@ -1,0 +1,93 @@
+﻿@model XTrendApp.Web.Models.User.LoginViewModel
+
+@{
+    Layout = null;
+}
+
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>XTrendApp Login</title>
+
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/@@tabler/core@1.4.0/dist/css/tabler.min.css" />
+</head>
+
+<body class=" d-flex flex-column">
+
+    <div class="page page-center">
+        <div class="container container-tight py-4">
+
+            <div class="text-center mb-4">
+                <h1>XTrendApp</h1>
+                <div class="text-secondary">
+                    Market Intelligence Platform
+                </div>
+            </div>
+
+            <div class="card card-md">
+
+                <div class="card-body">
+
+                    <h2 class="card-title text-center mb-4">
+                        Login
+                    </h2>
+
+                    <form method="post">
+
+                        <div asp-validation-summary="All"
+                             class="text-danger mb-3">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">
+                                User Name
+                            </label>
+
+                            <input asp-for="Username"
+                                   class="form-control" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">
+                                Password
+                            </label>
+
+                            <input asp-for="Password"
+                                   type="password"
+                                   class="form-control" />
+                        </div>
+
+                        <div class="form-check mb-3">
+
+                            <input asp-for="RememberMe"
+                                   class="form-check-input" />
+
+                            <label asp-for="RememberMe"
+                                   class="form-check-label">
+
+                                Remember Me
+
+                            </label>
+
+                        </div>
+
+                        <div class="form-footer">
+                            <button type="submit"
+                                    class="btn btn-primary w-100">
+                                Login
+                            </button>
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,108 @@
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="page-header d-print-none">
+    <div class="row align-items-center">
+        <div class="col">
+            <div class="page-pretitle">Overview</div>
+            <h2 class="page-title">Dashboard</h2>
+        </div>
+        <div class="col-auto ms-auto d-print-none">
+            <div class="btn-list">
+                <a href="#" class="btn btn-primary">
+                    <i class="ti ti-player-play me-2"></i>
+                    Start Scan
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row row-deck row-cards mt-3">
+    <div class="col-sm-6 col-lg-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="subheader">Tracked Products</div>
+                    <div class="ms-auto text-primary"><i class="ti ti-package"></i></div>
+                </div>
+                <div class="h1 mb-1">0</div>
+                <div class="text-secondary">Ready for Amazon import</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="subheader">Marketplaces</div>
+                    <div class="ms-auto text-primary"><i class="ti ti-building-store"></i></div>
+                </div>
+                <div class="h1 mb-1">1</div>
+                <div class="text-secondary">Amazon planned as first source</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="subheader">Snapshots</div>
+                    <div class="ms-auto text-primary"><i class="ti ti-camera"></i></div>
+                </div>
+                <div class="h1 mb-1">0</div>
+                <div class="text-secondary">Weekly tracking will appear here</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="subheader">Scan Jobs</div>
+                    <div class="ms-auto text-primary"><i class="ti ti-history"></i></div>
+                </div>
+                <div class="h1 mb-1">0</div>
+                <div class="text-secondary">Hangfire schedule will run weekly</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-3">
+    <div class="card-header">
+        <h3 class="card-title">Product Watchlist Preview</h3>
+        <div class="card-actions">
+            <button class="btn btn-outline-secondary btn-sm" type="button">
+                <i class="ti ti-download me-1"></i>
+                Export
+            </button>
+        </div>
+    </div>
+    <div class="card-body">
+        <div id="product-preview-table"></div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            new Tabulator("#product-preview-table", {
+                layout: "fitColumns",
+                height: 320,
+                placeholder: "No products imported yet.",
+                data: [],
+                columns: [
+                    { title: "Image", field: "image", width: 90, hozAlign: "center" },
+                    { title: "Product", field: "title", minWidth: 240 },
+                    { title: "Source", field: "source", width: 140 },
+                    { title: "Price", field: "price", width: 120, hozAlign: "right" },
+                    { title: "Stock", field: "stock", width: 120 },
+                    { title: "Last Seen", field: "lastSeen", width: 160 },
+                    { title: "Status", field: "status", width: 130 }
+                ]
+            });
+        });
+    </script>
+}
