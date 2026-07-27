@@ -4,8 +4,6 @@ public class AmazonVariationColor
 {
     public string Name { get; set; } = "";
 
-    public string? Title { get; set; }
-
     public string Asin { get; set; } = "";
 
     public bool Selected { get; set; }
@@ -17,8 +15,6 @@ public class AmazonVariationColor
     public string CurrencyCode { get; set; } = "";
 
     public bool InStock { get; set; }
-
-    public decimal? Price { get; set; }
 
     public decimal? ListPrice { get; set; }
 

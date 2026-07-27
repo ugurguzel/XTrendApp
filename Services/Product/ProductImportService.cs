@@ -248,7 +248,7 @@ public class ProductImportService
         return await _categoryRepository.GetOrCreateAsync(
             connection,
             transaction,
-            "Rugs");
+            "Area Rugs");
 
 
 
@@ -277,6 +277,8 @@ public class ProductImportService
             Name = model.Title,
 
             Description = null,
+
+            ProductUrl = model.ProductUrl,
 
             IsActive = true
         };

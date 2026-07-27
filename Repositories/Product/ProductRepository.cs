@@ -25,6 +25,7 @@ INSERT INTO Product
     SourceProductId,
     Name,
     Description,
+    ProductUrl,
     IsActive
 )
 VALUES
@@ -36,6 +37,7 @@ VALUES
     @SourceProductId,
     @Name,
     @Description,
+    @ProductUrl,
     @IsActive
 );
 
@@ -55,6 +57,8 @@ CategoryId=@CategoryId,
 Name=@Name,
 
 Description=@Description,
+ProductUrl=@ProductUrl,
+
 
 IsActive=@IsActive,
 
@@ -62,14 +66,6 @@ UpdatedAt=SYSDATETIME()
 
 WHERE Id=@Id;
 """;
-
-    //private const string UpdateLastScanSql = """
-    //    UPDATE Product
-    //    SET
-    //        LastScanAt = @LastScanAt
-    //    WHERE
-    //        Id = @ProductId;
-    //    """;
 
     #endregion
 

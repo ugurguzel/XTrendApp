@@ -2,7 +2,9 @@
 {
     public static class AmazonSearchSelectors
     {
-        public const string ProductCard = "[data-component-type='s-search-result']";
+        //public const string ProductCard = "[data-component-type='s-search-result']";
+
+        public const string ProductCard = ".puis-card-container";
 
         public const string AsinAttribute = "data-csa-c-item-id";
 

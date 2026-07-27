@@ -9,15 +9,18 @@ namespace XTrendApp.Web.Engines.Amazon
     {
         private readonly AmazonDropdownParser _dropdownParser;
         private readonly AmazonButtonParser _buttonParser;
+        private readonly AmazonColorParser _colorParser;
         private readonly AmazonPriceEngine _priceEngine;
 
         public AmazonVariationEngine(
             AmazonDropdownParser dropdownParser,
             AmazonButtonParser buttonParser,
+            AmazonColorParser colorParser,
             AmazonPriceEngine priceEngine)
         {
             _dropdownParser = dropdownParser;
             _buttonParser = buttonParser;
+            _colorParser = colorParser;
             _priceEngine = priceEngine;
         }
 
@@ -60,6 +63,18 @@ namespace XTrendApp.Web.Engines.Amazon
             {
                 await _buttonParser.ParseAsync(root, result);
             }
+
+            var colors = await _colorParser.ParseAsync(page);
+
+            Console.WriteLine("========== COLORS ==========");
+
+            foreach (var color in colors)
+            {
+                Console.WriteLine(
+                    $"{color.Name} | {color.Asin} | {color.CurrentPrice} | {color.CurrencyCode} | {color.InStock}");
+            }
+
+            Console.WriteLine("============================");
 
             await _priceEngine.ParseAsync(
     page,

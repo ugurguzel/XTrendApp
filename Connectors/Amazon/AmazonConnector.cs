@@ -38,17 +38,20 @@ namespace XTrendApp.Web.Connectors.Amazon
         {
             string baseUrl;
             string sessionFile;
+            string searchUrl;
 
             switch (market)
             {
                 case AmazonMarket.US:
                     baseUrl = "https://www.amazon.com";
                     sessionFile = "amazon-us.json";
+                    searchUrl = "https://www.amazon.com/s?rh=n:684541011";
                     break;
 
                 case AmazonMarket.UK:
                     baseUrl = "https://www.amazon.co.uk";
                     sessionFile = "amazon-uk.json";
+                    searchUrl = "https://www.amazon.co.uk/b?node=3028556031";
                     break;
 
                 default:
@@ -60,7 +63,7 @@ namespace XTrendApp.Web.Connectors.Amazon
             Console.WriteLine($" AMAZON {market}");
             Console.WriteLine("══════════════════════════════════════════════════════════════════════════════");
             Console.WriteLine();
-            Console.WriteLine($"Keyword          : {_options.Keyword}");
+            Console.WriteLine($"Category URL     : {searchUrl}");
             Console.WriteLine($"Marketplace      : {market}");
             Console.WriteLine();
 
@@ -84,15 +87,9 @@ namespace XTrendApp.Web.Connectors.Amazon
 
             var page = await context.NewPageAsync();
 
-            //await page.GotoAsync(
-            //    $"{baseUrl}/s?k={_options.Keyword}",
-            //    new PageGotoOptions
-            //    {
-            //        WaitUntil = WaitUntilState.DOMContentLoaded
-            //    });
-
             await page.GotoAsync(
-    $"{baseUrl}/s?k={Uri.EscapeDataString(_options.Keyword)}&s={_options.SortOrder}",
+    searchUrl,
+
     new PageGotoOptions
     {
         WaitUntil = WaitUntilState.DOMContentLoaded
@@ -100,6 +97,7 @@ namespace XTrendApp.Web.Connectors.Amazon
 
             await page.Locator(AmazonSearchSelectors.ProductCard)
     .First
+
     .WaitForAsync(new LocatorWaitForOptions
     {
         State = WaitForSelectorState.Visible,

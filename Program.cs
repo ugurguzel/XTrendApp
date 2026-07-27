@@ -79,7 +79,7 @@ builder.Services.AddScoped<AmazonDropdownParser>();
 
 builder.Services.AddScoped<AmazonButtonParser>();
 
-//builder.Services.AddScoped<AmazonColorParser>();
+builder.Services.AddScoped<AmazonColorParser>();
 
 #region Repositories
 
