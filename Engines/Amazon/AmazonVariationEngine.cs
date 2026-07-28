@@ -10,18 +10,19 @@ namespace XTrendApp.Web.Engines.Amazon
         private readonly AmazonDropdownParser _dropdownParser;
         private readonly AmazonButtonParser _buttonParser;
         private readonly AmazonColorParser _colorParser;
-        private readonly AmazonPriceEngine _priceEngine;
+        private readonly AmazonVariationScanner _variationScanner;
+
 
         public AmazonVariationEngine(
             AmazonDropdownParser dropdownParser,
             AmazonButtonParser buttonParser,
             AmazonColorParser colorParser,
-            AmazonPriceEngine priceEngine)
+            AmazonVariationScanner variationScanner)
         {
             _dropdownParser = dropdownParser;
             _buttonParser = buttonParser;
             _colorParser = colorParser;
-            _priceEngine = priceEngine;
+            _variationScanner = variationScanner;
         }
 
         public async Task<AmazonVariationResult> ParseAsync(
@@ -76,7 +77,7 @@ namespace XTrendApp.Web.Engines.Amazon
 
             Console.WriteLine("============================");
 
-            await _priceEngine.ParseAsync(
+            await _variationScanner.ParseAsync(
     page,
     result,
     baseUrl,

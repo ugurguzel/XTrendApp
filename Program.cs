@@ -69,7 +69,7 @@ builder.Services.AddScoped<AmazonDetailParser>();
 
 builder.Services.AddScoped<AmazonVariationEngine>();
 
-builder.Services.AddScoped<AmazonPriceEngine>();
+builder.Services.AddScoped<AmazonVariationScanner>();
 
 builder.Services.AddScoped<AmazonVariationNavigator>();
 

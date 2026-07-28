@@ -4,8 +4,20 @@ using XTrendApp.Web.Models.Amazon;
 
 namespace XTrendApp.Web.Engines.Amazon;
 
-public class AmazonPriceEngine
+public class AmazonVariationScanner
 {
+
+    private readonly AmazonVariationNavigator _navigator;
+    private readonly AmazonColorParser _colorParser;
+
+    public AmazonVariationScanner(AmazonVariationNavigator navigator, AmazonColorParser colorParser)
+    {
+        _navigator = navigator;
+        _colorParser = colorParser;
+    }
+
+
+
     public async Task ParseAsync(
         IPage page,
         AmazonVariationResult variation,
@@ -17,14 +29,32 @@ public class AmazonPriceEngine
 
         foreach (var size in variation.Sizes)
         {
-            await page.GotoAsync(
-                $"{baseUrl}/dp/{size.Asin}",
-                new PageGotoOptions
-                {
-                    WaitUntil = WaitUntilState.DOMContentLoaded
-                });
+            //await page.GotoAsync(
+            //    $"{baseUrl}/dp/{size.Asin}",
+            //    new PageGotoOptions
+            //    {
+            //        WaitUntil = WaitUntilState.DOMContentLoaded
+            //    });
 
-            await page.WaitForTimeoutAsync(800);
+            //await page.WaitForTimeoutAsync(800);
+
+            await _navigator.GoToSizeAsync(page, size);
+
+            var colors = await _colorParser.ParseAsync(page);
+
+            size.Colors = colors;
+
+            Console.WriteLine();
+            Console.WriteLine($"========== SIZE : {size.Name} ==========");
+
+            foreach (var color in colors)
+            {
+                Console.WriteLine(
+                    $"{color.Name} | {color.Asin} | {color.CurrentPrice}");
+            }
+
+            Console.WriteLine("======================================");
+            Console.WriteLine();
 
             var titleLocator = page.Locator("#productTitle").First;
 

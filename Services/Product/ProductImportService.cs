@@ -1,4 +1,5 @@
 ﻿using System.Data;
+using System.Drawing;
 using XTrendApp.Web.Data;
 using XTrendApp.Web.Models.Amazon;
 using XTrendApp.Web.Models.Entities;
@@ -330,6 +331,7 @@ public class ProductImportService
     private ProductVariationEntity BuildVariationEntity(
     long productId,
     AmazonVariationSize size,
+    AmazonVariationColor color,
     AmazonDetailModel model,
     int displayOrder)
     {
@@ -337,7 +339,7 @@ public class ProductImportService
         {
             ProductId = productId,
 
-            SourceVariationId = size.Asin,
+            SourceVariationId = color.Asin,
 
             Name = string.IsNullOrWhiteSpace(size.Title)
     ? model.Title
@@ -352,7 +354,9 @@ public class ProductImportService
 
             DisplayOrder = displayOrder,
 
-            IsDefault = size.Selected,
+            IsDefault =
+    size.Selected &&
+    color.Selected,
 
             IsActive = true
         };
@@ -360,7 +364,8 @@ public class ProductImportService
 
     private List<ProductVariationOptionEntity> BuildVariationOptionEntities(
     long variationId,
-    AmazonVariationSize size)
+    AmazonVariationSize size,
+    AmazonVariationColor color)
     {
         var list = new List<ProductVariationOptionEntity>();
 
@@ -377,26 +382,38 @@ public class ProductImportService
             });
         }
 
+        if (!string.IsNullOrWhiteSpace(color.Name))
+        {
+            list.Add(new ProductVariationOptionEntity
+            {
+                ProductVariationId = variationId,
+                OptionName = "Color",
+                OptionValue = color.Name,
+                DisplayOrder = displayOrder++
+            });
+        }
+
         return list;
     }
 
     private ProductSnapshotEntity BuildSnapshotEntity(
     long variationId,
-    AmazonVariationSize size)
+    AmazonVariationSize size,
+    AmazonVariationColor color)
     {
         return new ProductSnapshotEntity
         {
             ProductVariationId = variationId,
 
-            Price = size.Price,
+            Price = color.CurrentPrice,
 
-            ListPrice = size.ListPrice,
+            ListPrice = color.ListPrice,
 
             SalePrice = null,
 
             ShippingPrice = null,
 
-            CurrencyCode = size.CurrencyCode,
+            CurrencyCode = color.CurrencyCode,
 
             Rating = null,
 
@@ -404,7 +421,7 @@ public class ProductImportService
 
             StockQuantity = null,
 
-            IsInStock = size.Available,
+            IsInStock = color.Available,
 
             IsPrime = false,
 
@@ -418,7 +435,7 @@ public class ProductImportService
 
             CouponText = null,
 
-            DeliveryText = size.DeliveryText,
+            DeliveryText = color.DeliveryText,
 
             CapturedAt = DateTime.UtcNow
         };
@@ -462,129 +479,145 @@ public class ProductImportService
 
         var displayOrder = 1;
 
+
+
         foreach (var size in variation.Sizes)
         {
-            var variationEntity = BuildVariationEntity(
+
+            Console.WriteLine();
+            Console.WriteLine($"SIZE : {size.Name}");
+
+            foreach (var color in size.Colors)
+            {
+                var variationEntity = BuildVariationEntity(
                 productId,
                 size,
+                color,
                 model,
                 displayOrder++);
+                Console.WriteLine(
+                    $"   {color.Name} | {color.Asin} | {color.CurrentPrice}");
 
-            var existingVariation =
+                var existingVariation =
     await _variationRepository.GetBySourceVariationIdAsync(
         connection,
         transaction,
         productId,
         variationEntity.SourceVariationId);
 
-            if (existingVariation == null)
-            {
-                variationEntity.Id =
-                    await _variationRepository.InsertAsync(
+                if (existingVariation == null)
+                {
+                    variationEntity.Id =
+                        await _variationRepository.InsertAsync(
+                            connection,
+                            transaction,
+                            variationEntity);
+                }
+                else
+                {
+                    variationEntity.Id = existingVariation.Id;
+
+                    Console.WriteLine("UPDATE VARIATION...");
+                    await _variationRepository.UpdateAsync(
                         connection,
                         transaction,
                         variationEntity);
-            }
-            else
-            {
-                variationEntity.Id = existingVariation.Id;
+                }
 
-                Console.WriteLine("UPDATE VARIATION...");
-                await _variationRepository.UpdateAsync(
-                    connection,
-                    transaction,
-                    variationEntity);
-            }
+                var optionEntities = BuildVariationOptionEntities(
+        variationEntity.Id,
+        size,
+        color);
 
-            var optionEntities = BuildVariationOptionEntities(
-    variationEntity.Id,
-    size);
+                Console.WriteLine("========== SIZE DATA ==========");
+                Console.WriteLine($"ASIN        : {size.Asin}");
+                Console.WriteLine($"Size        : {size.Name}");
+                Console.WriteLine($"Price       : {size.Price}");
+                Console.WriteLine($"List Price  : {size.ListPrice}");
+                Console.WriteLine($"Currency    : {size.CurrencyCode}");
+                Console.WriteLine($"Available   : {size.Available}");
+                Console.WriteLine($"Delivery    : {size.DeliveryText}");
+                Console.WriteLine("===============================");
+                Console.WriteLine();
 
-            Console.WriteLine("========== SIZE DATA ==========");
-            Console.WriteLine($"ASIN        : {size.Asin}");
-            Console.WriteLine($"Size        : {size.Name}");
-            Console.WriteLine($"Price       : {size.Price}");
-            Console.WriteLine($"List Price  : {size.ListPrice}");
-            Console.WriteLine($"Currency    : {size.CurrencyCode}");
-            Console.WriteLine($"Available   : {size.Available}");
-            Console.WriteLine($"Delivery    : {size.DeliveryText}");
-            Console.WriteLine("===============================");
-            Console.WriteLine();
+                var snapshotEntity = BuildSnapshotEntity(
+                    variationEntity.Id,
+                    size,
+                    color);
 
-            var snapshotEntity = BuildSnapshotEntity(
-                variationEntity.Id,
-                size);
+                Console.WriteLine("INSERT SNAPSHOT...");
+                snapshotEntity.Id =
 
-            Console.WriteLine("INSERT SNAPSHOT...");
-            snapshotEntity.Id =
 
-                
-                await _snapshotRepository.InsertAsync(
-                    connection,
-                    transaction,
-                    snapshotEntity);
-
-            foreach (var option in optionEntities)
-            {
-                var existingOption =
-                    await _variationOptionRepository.GetByVariationIdAndOptionNameAsync(
+                    await _snapshotRepository.InsertAsync(
                         connection,
                         transaction,
-                        option.ProductVariationId,
-                        option.OptionName);
+                        snapshotEntity);
 
-                if (existingOption == null)
+                foreach (var option in optionEntities)
                 {
-                    option.Id =
-                        await _variationOptionRepository.InsertAsync(
+                    var existingOption =
+                        await _variationOptionRepository.GetByVariationIdAndOptionNameAsync(
                             connection,
                             transaction,
-                            option);
+                            option.ProductVariationId,
+                            option.OptionName);
+
+                    if (existingOption == null)
+                    {
+                        option.Id =
+                            await _variationOptionRepository.InsertAsync(
+                                connection,
+                                transaction,
+                                option);
+                    }
                 }
+
+                PrintVariationToConsole(
+                    variationEntity,
+                    optionEntities,
+                    snapshotEntity);
+
             }
 
-            PrintVariationToConsole(
-                variationEntity,
-                optionEntities,
-                snapshotEntity);
+            Console.WriteLine();
+
+
+            
+
+            
         }
 
         await Task.CompletedTask;
     }
 
-    private static void PrintVariationToConsole(
+    private void PrintVariationToConsole(
     ProductVariationEntity variation,
-    IEnumerable<ProductVariationOptionEntity> options,
+    List<ProductVariationOptionEntity> options,
     ProductSnapshotEntity snapshot)
     {
-        Console.WriteLine("----------------------------------------------------");
-
-        Console.WriteLine("VARIATION");
-        Console.WriteLine($"Child ASIN   : {variation.SourceVariationId}");
-        Console.WriteLine($"Name         : {variation.Name}");
-        Console.WriteLine($"Default      : {variation.IsDefault}");
-        Console.WriteLine($"Active       : {variation.IsActive}");
         Console.WriteLine();
+        Console.WriteLine("==============================================");
+        Console.WriteLine("PRODUCT VARIATION");
+        Console.WriteLine("==============================================");
 
-        Console.WriteLine("OPTIONS");
+        Console.WriteLine($"Child ASIN : {variation.SourceVariationId}");
 
         foreach (var option in options)
         {
-            Console.WriteLine($"  {option.OptionName,-12}: {option.OptionValue}");
+            Console.WriteLine($"{option.OptionName,-10}: {option.OptionValue}");
         }
 
         Console.WriteLine();
+        Console.WriteLine($"Price      : {snapshot.Price}");
+        Console.WriteLine($"List Price : {snapshot.ListPrice}");
+        Console.WriteLine($"Currency   : {snapshot.CurrencyCode}");
+        Console.WriteLine($"In Stock   : {snapshot.IsInStock}");
+        Console.WriteLine($"Delivery   : {snapshot.DeliveryText}");
 
-        Console.WriteLine("SNAPSHOT");
-        Console.WriteLine($"Price        : {snapshot.Price}");
-        Console.WriteLine($"List Price   : {snapshot.ListPrice}");
-        Console.WriteLine($"Currency     : {snapshot.CurrencyCode}");
-        Console.WriteLine($"In Stock     : {snapshot.IsInStock}");
-        Console.WriteLine($"Delivery     : {snapshot.DeliveryText}");
-
-        Console.WriteLine("----------------------------------------------------");
+        Console.WriteLine("==============================================");
         Console.WriteLine();
     }
 
-    
+
 }
