@@ -1,5 +1,6 @@
 ﻿using Microsoft.Playwright;
 using XTrendApp.Web.Models.Amazon;
+using XTrendApp.Web.Common;
 
 namespace XTrendApp.Web.Engines.Amazon;
 
@@ -16,13 +17,8 @@ public class AmazonColorParser
 
         var count = await items.CountAsync();
 
-        Console.WriteLine();
-        Console.WriteLine($"COLOR ITEM COUNT : {count}");
-        Console.WriteLine();
-
-        Console.WriteLine("CURRENT PAGE : " + page.Url);
-
-        Console.WriteLine();
+        Logger.Debug($"COLOR ITEM COUNT : {count}");
+        Logger.Debug("CURRENT PAGE : " + page.Url);
 
         for (int i = 0; i < count; i++)
         {
@@ -44,6 +40,15 @@ public class AmazonColorParser
 
             color.Available =
                 (await item.GetAttributeAsync("data-initiallyunavailable")) != "true";
+
+            // Bu size için satılmayan renkleri atla.
+            if (!color.Available)
+            {
+                Logger.Debug($"SKIP COLOR : {color.Asin} (Unavailable for selected size)");
+
+
+                continue;
+            }
 
             //--------------------------------------------------
             // IMAGE / NAME
@@ -104,16 +109,17 @@ public class AmazonColorParser
             // DEBUG
             //--------------------------------------------------
 
-            Console.WriteLine(
-                $"COLOR : {color.Name,-20} | ASIN : {color.Asin} | PRICE : {color.CurrentPrice} | STOCK : {color.InStock}");
+            Logger.Debug(
+    $"COLOR : {color.Name,-20} | ASIN : {color.Asin} | PRICE : {color.CurrentPrice} | STOCK : {color.InStock}");
+
 
             if (string.IsNullOrWhiteSpace(color.Name))
             {
-                Console.WriteLine();
-                Console.WriteLine("========== EMPTY COLOR ==========");
-                Console.WriteLine(await item.InnerHTMLAsync());
-                Console.WriteLine("=================================");
-                Console.WriteLine();
+                Logger.Debug("");
+                Logger.Debug("========== EMPTY COLOR ==========");
+                Logger.Debug(await item.InnerHTMLAsync());
+                Logger.Debug("=================================");
+                Logger.Debug("");
 
                 continue;
             }
@@ -121,21 +127,19 @@ public class AmazonColorParser
             colors.Add(color);
         }
 
-        Console.WriteLine();
-        Console.WriteLine($"TOTAL COLORS : {colors.Count}");
-        Console.WriteLine();
+        Logger.Debug("");
+        Logger.Debug($"TOTAL COLORS : {colors.Count}");
+        Logger.Debug("");
 
-
-        Console.WriteLine();
-        Console.WriteLine("========== COLOR PARSER ==========");
+        Logger.Debug("========== COLOR PARSER ==========");
 
         foreach (var c in colors)
         {
-            Console.WriteLine($"{c.Name,-20} {c.Asin}");
+            Logger.Debug($"{c.Name,-20} {c.Asin}");
         }
 
-        Console.WriteLine("==================================");
-        Console.WriteLine();
+        Logger.Debug("==================================");
+        Logger.Debug("");
 
         return colors;
     }

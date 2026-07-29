@@ -2,6 +2,7 @@
 using System.Buffers.Text;
 using XTrendApp.Web.Connectors.Amazon;
 using XTrendApp.Web.Models.Amazon;
+using XTrendApp.Web.Common;
 
 namespace XTrendApp.Web.Engines.Amazon
 {
@@ -67,21 +68,29 @@ namespace XTrendApp.Web.Engines.Amazon
 
             var colors = await _colorParser.ParseAsync(page);
 
-            Console.WriteLine("========== COLORS ==========");
+            Logger.Debug("========== COLORS ==========");
 
             foreach (var color in colors)
             {
-                Console.WriteLine(
+                Logger.Debug(
                     $"{color.Name} | {color.Asin} | {color.CurrentPrice} | {color.CurrencyCode} | {color.InStock}");
             }
 
-            Console.WriteLine("============================");
+            Logger.Debug("============================");
 
             await _variationScanner.ParseAsync(
     page,
     result,
     baseUrl,
     market);
+
+            foreach (var size in result.Sizes)
+            {
+                foreach (var color in size.Colors)
+                {
+                    Logger.Debug($"{size.Name} | {color.Name} | {color.Asin}");
+                }
+            }
 
             return result;
         }

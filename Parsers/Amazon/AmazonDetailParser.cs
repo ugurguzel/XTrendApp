@@ -1,5 +1,6 @@
 ﻿using Microsoft.Playwright;
 using XTrendApp.Web.Models.Amazon;
+using XTrendApp.Web.Common;
 
 public sealed class AmazonDetailParser
 {
@@ -36,9 +37,9 @@ public sealed class AmazonDetailParser
     IPage page,
     AmazonDetailModel detail)
     {
-        Console.WriteLine("----------------------------------------");
-        Console.WriteLine("PRODUCT INFORMATION");
-        Console.WriteLine("----------------------------------------");
+            Logger.Debug("----------------------------------------");
+        Logger.Debug("PRODUCT INFORMATION");
+        Logger.Debug("----------------------------------------");
 
         await ParseSectionAsync(page, detail, "Features & Specs");
         await ParseSectionAsync(page, detail, "Item details");
@@ -52,8 +53,8 @@ public sealed class AmazonDetailParser
     AmazonDetailModel detail,
     string sectionName)
     {
-        Console.WriteLine();
-        Console.WriteLine($"[{sectionName}]");
+        Logger.Debug("");
+        Logger.Debug($"[{sectionName}]");
 
         var section = page
             .Locator("#prodDetails .a-expander-container")
@@ -62,7 +63,7 @@ public sealed class AmazonDetailParser
 
         if (await section.CountAsync() == 0)
         {
-            Console.WriteLine("Not Found");
+            Logger.Debug("Not Found");
             return;
         }
 
@@ -80,7 +81,7 @@ public sealed class AmazonDetailParser
     string key,
     string value)
     {
-        Console.WriteLine($"{key,-40} : {value}");
+        Logger.Debug($"{key,-40} : {value}");
     }
 
     private async Task<Dictionary<string, string>> ReadSectionAsync(

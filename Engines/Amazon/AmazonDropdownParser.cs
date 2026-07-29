@@ -1,5 +1,7 @@
 ﻿using Microsoft.Playwright;
 using XTrendApp.Web.Models.Amazon;
+using XTrendApp.Web.Common;
+
 
 namespace XTrendApp.Web.Engines.Amazon
 {
@@ -13,9 +15,8 @@ namespace XTrendApp.Web.Engines.Amazon
 
             var count = await options.CountAsync();
 
-            Console.WriteLine($"Size Options     : {count}");
-            Console.WriteLine();
-
+            Logger.Debug($"Size Options     : {count}");
+            
             for (int i = 0; i < count; i++)
             {
                 var option = options.Nth(i);

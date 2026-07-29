@@ -1,5 +1,7 @@
 ﻿using Microsoft.Playwright;
 using XTrendApp.Web.Models.Amazon;
+using XTrendApp.Web.Common;
+
 
 namespace XTrendApp.Web.Engines.Amazon
 {
@@ -13,8 +15,8 @@ namespace XTrendApp.Web.Engines.Amazon
 
             var count = await items.CountAsync();
 
-            Console.WriteLine($"Size Swatches    : {count}");
-            Console.WriteLine();
+            Logger.Debug($"Size Swatches    : {count}");
+            Logger.Debug("");
 
 
             for (int i = 0; i < count; i++)
@@ -23,11 +25,7 @@ namespace XTrendApp.Web.Engines.Amazon
 
                 if (i == 0)
                 {
-                    //Console.WriteLine();
-                    //Console.WriteLine("========== FIRST SIZE HTML ==========");
-                    //Console.WriteLine(await item.EvaluateAsync<string>("e => e.outerHTML"));
-                    //Console.WriteLine("=====================================");
-                    //Console.WriteLine();
+                    
                 }
 
                 var name = (await item.InnerTextAsync()).Trim();

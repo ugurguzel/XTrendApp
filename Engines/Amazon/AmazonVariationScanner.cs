@@ -1,6 +1,7 @@
 ﻿using Microsoft.Playwright;
 using XTrendApp.Web.Connectors.Amazon;
 using XTrendApp.Web.Models.Amazon;
+using XTrendApp.Web.Common;
 
 namespace XTrendApp.Web.Engines.Amazon;
 
@@ -34,33 +35,33 @@ public class AmazonVariationScanner
             await _navigator.GoToSizeAsync(page, baseUrl,
 size);
 
-            Console.WriteLine();
-            Console.WriteLine("====================================");
-            Console.WriteLine($"EXPECTED SIZE : {size.Name}");
-            Console.WriteLine($"EXPECTED ASIN : {size.Asin}");
-            Console.WriteLine($"CURRENT URL   : {page.Url}");
+            Logger.Debug("");
+            Logger.Debug("====================================");
+            Logger.Debug($"EXPECTED SIZE : {size.Name}");
+            Logger.Debug($"EXPECTED ASIN : {size.Asin}");
+            Logger.Debug($"CURRENT URL   : {page.Url}");
 
             var currentSize = page.Locator("#native_dropdown_selected_size_name");
 
             if (await currentSize.CountAsync() > 0)
             {
-                Console.WriteLine($"PAGE SIZE     : {await currentSize.InputValueAsync()}");
+                Logger.Debug($"PAGE SIZE     : {await currentSize.InputValueAsync()}");
             }
 
-            Console.WriteLine("====================================");
-            Console.WriteLine();
+            Logger.Debug("====================================");
+            Logger.Debug("");
 
             var colors = await _colorParser.ParseAsync(page);
 
-            Console.WriteLine();
-            Console.WriteLine($"SIZE : {size.Name}");
+            Logger.Debug("");
+            Logger.Debug($"SIZE : {size.Name}");
 
-            foreach (var c in colors.Take(5))
+            foreach (var c in colors)
             {
-                Console.WriteLine($"{c.Name} -> {c.Asin}");
+                Logger.Debug($"{c.Name} -> {c.Asin}");
             }
 
-            Console.WriteLine();
+            Logger.Debug("");
 
             size.Colors = colors;
 
@@ -76,14 +77,14 @@ size);
 
             foreach (var group in duplicateGroups)
             {
-                Console.WriteLine($"DUPLICATE ASIN : {group.Key}");
+                Logger.Debug($"DUPLICATE ASIN : {group.Key}");
 
                 foreach (var item in group)
                 {
-                    Console.WriteLine($"   {item.Size} -> {item.Color}");
+                    Logger.Debug($"   {item.Size} -> {item.Color}");
                 }
 
-                Console.WriteLine();
+                Logger.Debug("");
             }
 
             size.Price = await TryGetPriceAsync(page);
@@ -198,13 +199,13 @@ size);
         if (!string.IsNullOrWhiteSpace(hires))
             return hires;
 
-        Console.WriteLine();
-        Console.WriteLine("========== IMAGE DEBUG ==========");
-        Console.WriteLine($"Page : {page.Url}");
-        Console.WriteLine($"src  : {src}");
-        Console.WriteLine($"hires: {hires}");
-        Console.WriteLine("=================================");
-        Console.WriteLine();
+        Logger.Debug("");
+        Logger.Debug("========== IMAGE DEBUG ==========");
+        Logger.Debug($"Page : {page.Url}");
+        Logger.Debug($"src  : {src}");
+        Logger.Debug($"hires: {hires}");
+        Logger.Debug("=================================");
+        Logger.Debug("");
 
         return null;
     }

@@ -6,6 +6,7 @@ using XTrendApp.Web.Models.Amazon;
 using XTrendApp.Web.Parsers.Amazon;
 using XTrendApp.Web.Selectors.Amazon;
 using XTrendApp.Web.Services.Product;
+using XTrendApp.Web.Common;
 
 namespace XTrendApp.Web.Connectors.Amazon
 {
@@ -58,15 +59,12 @@ namespace XTrendApp.Web.Connectors.Amazon
                     throw new Exception("Unknown market.");
             }
 
-            Console.WriteLine();
-            Console.WriteLine("══════════════════════════════════════════════════════════════════════════════");
-            Console.WriteLine($" AMAZON {market}");
-            Console.WriteLine("══════════════════════════════════════════════════════════════════════════════");
-            Console.WriteLine();
-            Console.WriteLine($"Category URL     : {searchUrl}");
-            Console.WriteLine($"Marketplace      : {market}");
-            Console.WriteLine();
-
+            Logger.Info("");
+            Logger.Info("══════════════════════════════════════════════════════════════════════════════");
+            Logger.Info($" AMAZON {market}");
+            Logger.Info("══════════════════════════════════════════════════════════════════════════════");
+            Logger.Info("");
+            
             using var playwright = await Playwright.CreateAsync();
 
             await using var browser = await playwright.Chromium.LaunchAsync(
@@ -110,12 +108,6 @@ namespace XTrendApp.Web.Connectors.Amazon
 
             var products = await _searchParser.ParseAsync(page, baseUrl);
 
-            //Console.WriteLine();
-            //Console.WriteLine("══════════════════════════════════════════════════════════════════════════════");
-            //Console.WriteLine(" SEARCH PARSER");
-            //Console.WriteLine("══════════════════════════════════════════════════════════════════════════════");
-            //Console.WriteLine();
-
             int index = 1;
 
             foreach (var product in products)
@@ -127,29 +119,18 @@ namespace XTrendApp.Web.Connectors.Amazon
                     _ => string.Empty
                 };
 
-                Console.WriteLine($"Product #{index++}");
-                Console.WriteLine();
+                Logger.Info($"Product #{index++}");
+                
 
-                Console.WriteLine($"ASIN             : {product.Asin}");
-                Console.WriteLine($"Title            : {product.Title}");
-                Console.WriteLine($"Price            : {product.Price}");
-                Console.WriteLine($"Currency         : {product.CurrencyCode}");
-                Console.WriteLine($"List Price       : {product.ListPrice}");
-                Console.WriteLine($"Rating           : {product.Rating}");
-                Console.WriteLine($"Reviews          : {product.ReviewCount}");
-                Console.WriteLine($"Bought           : {product.BoughtLastMonthText}");
-                Console.WriteLine($"Bought Count     : {product.BoughtLastMonthCount}");
-                Console.WriteLine($"Variations       : {product.VariationCount}");
-                Console.WriteLine($"Image            : {product.ImageUrl}");
-                Console.WriteLine($"URL              : {product.ProductUrl}");
+                Logger.Info($"Product {index++}/{products.Count}");
+                Logger.Info($"ASIN : {product.Asin}");
+                Logger.Info("");
 
-                Console.WriteLine();
-                Console.WriteLine("──────────────────────────────────────────────────────────────────────────────");
-                Console.WriteLine();
+                
             }
 
-            Console.WriteLine($"Products Found   : {products.Count}");
-            Console.WriteLine();
+            Logger.Info($"Products Found : {products.Count}");
+            
 
             //--------------------------------------------------
             // DETAIL PARSER
@@ -157,17 +138,6 @@ namespace XTrendApp.Web.Connectors.Amazon
 
             foreach (var product in products)
             {
-                //Console.WriteLine();
-                //Console.WriteLine("══════════════════════════════════════════════════════════════════════════════");
-                //Console.WriteLine(" DETAIL PARSER");
-                //Console.WriteLine("══════════════════════════════════════════════════════════════════════════════");
-                //Console.WriteLine();
-
-                //Console.WriteLine($"ASIN             : {product.Asin}");
-                //Console.WriteLine($"Title            : {product.Title}");
-                //Console.WriteLine($"URL              : {product.ProductUrl}");
-                //Console.WriteLine();
-
                 //await page.GotoAsync(
                 //    product.ProductUrl,
                 //    new PageGotoOptions
@@ -223,14 +193,12 @@ namespace XTrendApp.Web.Connectors.Amazon
 
             await browser.CloseAsync();
 
-            Console.WriteLine();
-            Console.WriteLine("══════════════════════════════════════════════════════════════════════════════");
-            Console.WriteLine($" AMAZON {market} COMPLETED");
-            Console.WriteLine("══════════════════════════════════════════════════════════════════════════════");
-            Console.WriteLine();
-
-            Console.WriteLine($"Products Processed : {products.Count}");
-            Console.WriteLine();
+            Logger.Success("");
+            Logger.Success("══════════════════════════════════════════════════════════════════════════════");
+            Logger.Success($" AMAZON {market} COMPLETED");
+            Logger.Success("══════════════════════════════════════════════════════════════════════════════");
+            Logger.Success($"Products Processed : {products.Count}");
+            Logger.Success("");
         }
     }
 }

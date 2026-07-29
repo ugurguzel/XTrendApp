@@ -14,6 +14,7 @@ using XTrendApp.Web.Repositories.ProductVariation;
 using XTrendApp.Web.Repositories.ProductVariationOption;
 using XTrendApp.Web.Repositories.Snapshot;
 using XTrendApp.Web.Repositories.Source;
+using XTrendApp.Web.Common;
 
 namespace XTrendApp.Web.Services.Product;
 
@@ -83,6 +84,8 @@ public class ProductImportService
 
         try
         {
+            string productAction;
+
             var sourceId = await ResolveSourceAsync(
     connection,
     transaction,
@@ -117,18 +120,26 @@ public class ProductImportService
                 sourceId,
                 model.Asin);
 
-            //Console.WriteLine();
-            //Console.WriteLine("========== PRODUCT IMPORT ==========");
-            //Console.WriteLine($"ASIN        : {model.Asin}");
-            //Console.WriteLine($"Title       : {model.Title}");
-            //Console.WriteLine($"BrandId     : {brandId}");
-            //Console.WriteLine($"CollectionId: {collectionId}");
-            //Console.WriteLine($"CategoryId  : {categoryId}");
-            //Console.WriteLine($"SourceId    : {sourceId}");
-            //Console.WriteLine($"Country     : {countryCode}");
-            //Console.WriteLine($"Action      : {(existingProduct == null ? "INSERT" : "UPDATE")}");
-            //Console.WriteLine("====================================");
-            //Console.WriteLine();
+            //if (existingProduct == null)
+            //{
+            //    product.Id = await _productRepository.InsertAsync(
+            //        connection,
+            //        transaction,
+            //        product);
+            //}
+            //else
+            //{
+            //    product.Id = existingProduct.Id;
+
+            //    Logger.Info("UPDATE PRODUCT...");
+
+            //    await _productRepository.UpdateAsync(
+            //        connection,
+            //        transaction,
+            //        product);
+            //}
+
+            
 
             if (existingProduct == null)
             {
@@ -136,16 +147,23 @@ public class ProductImportService
                     connection,
                     transaction,
                     product);
+
+                productAction = "INSERT";
+
+                Logger.Info("INSERT PRODUCT...");
             }
             else
             {
                 product.Id = existingProduct.Id;
 
-                Console.WriteLine("UPDATE PRODUCT...");
                 await _productRepository.UpdateAsync(
                     connection,
                     transaction,
                     product);
+
+                productAction = "UPDATE";
+
+                Logger.Info("UPDATE PRODUCT...");
             }
 
             var images = BuildImageEntities(
@@ -184,7 +202,8 @@ public class ProductImportService
     transaction,
     product.Id,
     model,
-    variation);
+    variation,
+    productAction);
 
             transaction.Commit();
         }
@@ -230,11 +249,11 @@ public class ProductImportService
     IDbTransaction transaction,
     AmazonDetailModel model)
     {
-        Console.WriteLine();
-        Console.WriteLine("========== BRAND CHECK ==========");
-        Console.WriteLine($"Brand : '{model.Brand}'");
-        Console.WriteLine("=================================");
-        Console.WriteLine();
+        Logger.Debug("");
+        Logger.Debug("========== BRAND CHECK ==========");
+        Logger.Debug($"Brand : '{model.Brand}'");
+        Logger.Debug("=================================");
+        Logger.Debug("");
 
         return await _brandRepository.GetOrCreateAsync(
             connection,
@@ -279,7 +298,7 @@ public class ProductImportService
 
             Description = null,
 
-            ProductUrl = model.ProductUrl,
+            ProductUrl = BuildProductUrl(model.ProductUrl, model.Asin),
 
             IsActive = true
         };
@@ -337,23 +356,18 @@ public class ProductImportService
     int displayOrder)
     {
 
-        Console.WriteLine();
-        Console.WriteLine("############ BUILD VARIATION ############");
-        Console.WriteLine($"SIZE PARAM : {size.Name}");
-        Console.WriteLine($"COLOR      : {color.Name}");
-        Console.WriteLine($"ASIN       : {color.Asin}");
-        Console.WriteLine("#########################################");
-        Console.WriteLine();
-
-
-        
-
-
+        Logger.Debug("");
+        Logger.Debug("############ BUILD VARIATION ############");
+        Logger.Debug($"SIZE PARAM : {size.Name}");
+        Logger.Debug($"COLOR      : {color.Name}");
+        Logger.Debug($"ASIN       : {color.Asin}");
+        Logger.Debug("#########################################");
+        Logger.Debug("");
 
 
         var variationName = size.Name ?? string.Empty;
 
-        Console.WriteLine($"NAME CREATED : {variationName} - {color.Name}");
+        Logger.Debug($"NAME CREATED : {variationName} - {color.Name}");
 
         if (!string.IsNullOrWhiteSpace(color.Name))
         {
@@ -373,7 +387,9 @@ public class ProductImportService
             EAN = null,
             GTIN = null,
 
-            ProductUrl = BuildVariationUrl(model.ProductUrl, color.Asin),
+            ProductUrl = BuildVariationUrl(
+        model.ProductUrl,
+        color.Asin), 
 
             DisplayOrder = displayOrder,
 
@@ -381,6 +397,21 @@ public class ProductImportService
 
             IsActive = true
         };
+    }
+
+    private static string BuildProductUrl(
+    string productUrl,
+    string asin)
+    {
+        if (string.IsNullOrWhiteSpace(productUrl) ||
+            string.IsNullOrWhiteSpace(asin))
+        {
+            return string.Empty;
+        }
+
+        var uri = new Uri(productUrl);
+
+        return $"{uri.Scheme}://{uri.Host}/dp/{asin}";
     }
 
     private static string BuildVariationUrl(
@@ -484,7 +515,8 @@ public class ProductImportService
     IDbTransaction transaction,
     long productId,
     AmazonDetailModel model,
-    AmazonVariationResult variation)
+    AmazonVariationResult variation,
+    string productAction)
     {
         if (variation.Sizes.Count == 0)
         {
@@ -503,22 +535,25 @@ public class ProductImportService
 
         var displayOrder = 1;
 
+        var insertedCount = 0;
+        var updatedCount = 0;
+
         foreach (var size in variation.Sizes)
         {
-            Console.WriteLine();
-            Console.WriteLine("==================================================");
-            Console.WriteLine($"SIZE : {size.Name}");
-            Console.WriteLine($"COLOR COUNT : {size.Colors.Count}");
-            Console.WriteLine("FIRST COLORS");
-            Console.WriteLine("--------------------------------------------------");
+            Logger.Debug("");
+            Logger.Debug("==================================================");
+            Logger.Debug($"SIZE : {size.Name}");
+            Logger.Debug($"COLOR COUNT : {size.Colors.Count}");
+            Logger.Debug("FIRST COLORS");
+            Logger.Debug("--------------------------------------------------");
 
             foreach (var c in size.Colors.Take(5))
             {
-                Console.WriteLine($"{c.Name,-20} -> {c.Asin}");
+                Logger.Debug($"{c.Name,-20} -> {c.Asin}");
             }
 
-            Console.WriteLine("==================================================");
-            Console.WriteLine();
+            Logger.Debug("==================================================");
+            Logger.Debug("");
 
             foreach (var color in size.Colors)
             {
@@ -529,11 +564,11 @@ public class ProductImportService
                     model,
                     displayOrder++);
 
-                Console.WriteLine("====================================");
-                Console.WriteLine($"Size  : {size.Name}");
-                Console.WriteLine($"Color : {color.Name}");
-                Console.WriteLine($"ASIN  : {color.Asin}");
-                Console.WriteLine("====================================");
+                Logger.Debug("====================================");
+                Logger.Debug($"Size  : {size.Name}");
+                Logger.Debug($"Color : {color.Name}");
+                Logger.Debug($"ASIN  : {color.Asin}");
+                Logger.Debug("====================================");
 
                 var existingVariation =
                     await _variationRepository.GetBySourceVariationIdAsync(
@@ -543,40 +578,42 @@ public class ProductImportService
                         variationEntity.SourceVariationId);
 
                 // BURAYA EKLE
-                Console.WriteLine("================================");
-                Console.WriteLine("CHECK VARIATION");
-                Console.WriteLine($"ProductId : {productId}");
-                Console.WriteLine($"ASIN      : {variationEntity.SourceVariationId}");
+                Logger.Debug("================================");
+                Logger.Debug("CHECK VARIATION");
+                Logger.Debug($"ProductId : {productId}");
+                Logger.Debug($"ASIN      : {variationEntity.SourceVariationId}");
 
                 if (existingVariation == null)
                 {
-                    Console.WriteLine("FOUND : NO");
+                    Logger.Debug("FOUND : NO");
                 }
                 else
                 {
-                    Console.WriteLine("FOUND : YES");
-                    Console.WriteLine($"DB Id   : {existingVariation.Id}");
-                    Console.WriteLine($"DB Name : {existingVariation.Name}");
-                    Console.WriteLine($"DB ASIN : {existingVariation.SourceVariationId}");
+                    Logger.Debug("FOUND : YES");
+                    Logger.Debug($"DB Id   : {existingVariation.Id}");
+                    Logger.Debug($"DB Name : {existingVariation.Name}");
+                    Logger.Debug($"DB ASIN : {existingVariation.SourceVariationId}");
                 }
 
-                Console.WriteLine("================================");
+                Logger.Debug("================================");
 
 
                 if (existingVariation == null)
                 {
-                    Console.WriteLine($"INSERT VARIATION : {variationEntity.SourceVariationId}");
+                    Logger.Debug($"INSERT VARIATION : {variationEntity.SourceVariationId}");
 
                     variationEntity.Id =
                         await _variationRepository.InsertAsync(
                             connection,
                             transaction,
                             variationEntity);
+
+                    insertedCount++;
                 }
                 else
                 {
 
-                    Console.WriteLine($"UPDATE VARIATION : {variationEntity.SourceVariationId}");
+                    Logger.Debug($"UPDATE VARIATION : {variationEntity.SourceVariationId}");
 
                     variationEntity.Id = existingVariation.Id;
 
@@ -584,6 +621,8 @@ public class ProductImportService
                         connection,
                         transaction,
                         variationEntity);
+
+                    updatedCount++;
                 }
 
                 var optionEntities = BuildVariationOptionEntities(
@@ -621,45 +660,27 @@ public class ProductImportService
                     }
                 }
 
-                //PrintVariationToConsole(
-                //    variationEntity,
-                //    optionEntities,
-                //    snapshotEntity);
+                
             }
 
-            Console.WriteLine();
+            
         }
+
+        var variationCount = variation.Sizes.Sum(x => x.Colors.Count);
+
+        Logger.Success("");
+        Logger.Success("====================================");
+        Logger.Success("PRODUCT COMPLETED");
+        Logger.Success($"Product Action      : {productAction}");
+        Logger.Success($"Inserted Variations : {insertedCount}");
+        Logger.Success($"Updated Variations  : {updatedCount}");
+        Logger.Success($"Total Variations    : {variationCount}");
+        Logger.Success($"Inserted Snapshots  : {variationCount}");
+        Logger.Success("====================================");
+        Logger.Success("");
 
         await Task.CompletedTask;
     }
 
-    //private void PrintVariationToConsole(
-    //ProductVariationEntity variation,
-    //List<ProductVariationOptionEntity> options,
-    //ProductSnapshotEntity snapshot)
-    //{
-    //    Console.WriteLine();
-    //    Console.WriteLine("==============================================");
-    //    Console.WriteLine("PRODUCT VARIATION");
-    //    Console.WriteLine("==============================================");
-
-    //    Console.WriteLine($"Child ASIN : {variation.SourceVariationId}");
-
-    //    foreach (var option in options)
-    //    {
-    //        Console.WriteLine($"{option.OptionName,-10}: {option.OptionValue}");
-    //    }
-
-    //    Console.WriteLine();
-    //    Console.WriteLine($"Price      : {snapshot.Price}");
-    //    Console.WriteLine($"List Price : {snapshot.ListPrice}");
-    //    Console.WriteLine($"Currency   : {snapshot.CurrencyCode}");
-    //    Console.WriteLine($"In Stock   : {snapshot.IsInStock}");
-    //    Console.WriteLine($"Delivery   : {snapshot.DeliveryText}");
-
-    //    Console.WriteLine("==============================================");
-    //    Console.WriteLine();
-    //}
-
-
+    
 }

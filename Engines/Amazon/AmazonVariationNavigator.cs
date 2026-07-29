@@ -1,6 +1,7 @@
 ﻿using Microsoft.Playwright;
 using System.Text.RegularExpressions;
 using XTrendApp.Web.Models.Amazon;
+using XTrendApp.Web.Common;
 
 namespace XTrendApp.Web.Engines.Amazon;
 
@@ -11,7 +12,7 @@ public class AmazonVariationNavigator
         string baseUrl,
         AmazonVariationSize size)
     {
-        Console.WriteLine($"Selecting Size : {size.Name}");
+        Logger.Debug($"Selecting Size : {size.Name}");
 
         await page.GotoAsync(
             $"{baseUrl}/dp/{size.Asin}",
@@ -22,7 +23,7 @@ public class AmazonVariationNavigator
             });
 
 
-        Console.WriteLine("PAGE TITLE : " + await page.TitleAsync());
+        Logger.Debug("PAGE TITLE : " + await page.TitleAsync());
 
 
         // Amazon'da NetworkIdle güvenilir değil.
@@ -39,19 +40,19 @@ public class AmazonVariationNavigator
         // DOM'un tamamen güncellenmesi için kısa bekleme
         //await page.WaitForTimeoutAsync(500);
 
-        Console.WriteLine($"Current URL : {page.Url}");
+        Logger.Debug($"Current URL : {page.Url}");
 
         var match = Regex.Match(
             page.Url,
             @"/dp/([A-Z0-9]{10})");
 
-        Console.WriteLine();
-        Console.WriteLine("====================================");
-        Console.WriteLine($"EXPECTED SIZE : {size.Name}");
-        Console.WriteLine($"EXPECTED ASIN : {size.Asin}");
-        Console.WriteLine($"CURRENT URL   : {page.Url}");
-        Console.WriteLine("====================================");
-        Console.WriteLine();
+        Logger.Debug("");
+        Logger.Debug("====================================");
+        Logger.Debug($"EXPECTED SIZE : {size.Name}");
+        Logger.Debug($"EXPECTED ASIN : {size.Asin}");
+        Logger.Debug($"CURRENT URL   : {page.Url}");
+        Logger.Debug("====================================");
+        Logger.Debug("");
 
         return match.Success
             ? match.Groups[1].Value

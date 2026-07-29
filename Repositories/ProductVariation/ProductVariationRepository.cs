@@ -98,13 +98,12 @@ public class ProductVariationRepository : IProductVariationRepository
         IDbTransaction transaction,
         ProductVariationEntity variation)
     {
-        //await connection.ExecuteAsync(
-        //    UpdateSql,
-        //    variation,
-        //    transaction);
+        await connection.ExecuteAsync(
+            UpdateSql,
+            variation,
+            transaction);
 
-        Console.WriteLine($"UPDATE SKIPPED : {variation.SourceVariationId}");
-        return;
+        
 
     }
 }

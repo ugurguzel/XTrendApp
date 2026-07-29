@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 using XTrendApp.Web.Models.Amazon;
 using XTrendApp.Web.Selectors.Amazon;
+using XTrendApp.Web.Common;
 
 namespace XTrendApp.Web.Parsers.Amazon
 {
@@ -18,12 +19,12 @@ namespace XTrendApp.Web.Parsers.Amazon
 
             var count = await cards.CountAsync();
 
-            Console.WriteLine($"Product Cards : {count}");
+            Logger.Debug($"Product Cards : {count}");
 
             if (count == 0)
                 return products;
 
-            const int maxTestProducts = 2;
+            const int maxTestProducts = 1;
             var maxProducts = Math.Min(maxTestProducts, count);
 
             for (int i = 0; i < maxProducts; i++)
@@ -36,7 +37,7 @@ namespace XTrendApp.Web.Parsers.Amazon
 
                     if (string.IsNullOrWhiteSpace(product.ProductUrl))
                     {
-                        Console.WriteLine($"⚠ Product #{i + 1} skipped (URL not found)");
+                        Logger.Error($"⚠ Product #{i + 1} skipped (URL not found)");
                         continue;
                     }
 
@@ -44,11 +45,11 @@ namespace XTrendApp.Web.Parsers.Amazon
                 }
                 catch (TimeoutException ex)
                 {
-                    Console.WriteLine($"⚠ Product #{i + 1} timeout : {ex.Message}");
+                    Logger.Error($"⚠ Product #{i + 1} timeout : {ex.Message}");
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"⚠ Product #{i + 1} error : {ex.Message}");
+                    Logger.Error($"⚠ Product #{i + 1} error : {ex.Message}");
                 }
             }
 
@@ -146,7 +147,7 @@ namespace XTrendApp.Web.Parsers.Amazon
             }
             catch (TimeoutException)
             {
-                Console.WriteLine("⚠ Product link timeout.");
+                Logger.Error("⚠ Product link timeout.");
                 return string.Empty;
             }
         }

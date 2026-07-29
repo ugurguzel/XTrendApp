@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
 using Microsoft.Playwright;
 using Microsoft.AspNetCore.Hosting;
+using XTrendApp.Web.Common;
 
 namespace XTrendApp.Web.Connectors.Wayfair
 {
@@ -62,7 +63,7 @@ namespace XTrendApp.Web.Connectors.Wayfair
 
             await page.GotoAsync(_options.BaseUrl);
 
-            Console.WriteLine("Wayfair profile is open. Complete the verification and close the browser manually.");
+            Logger.Debug("Wayfair profile is open. Complete the verification and close the browser manually.");
 
             await page.WaitForTimeoutAsync(150000);
 
