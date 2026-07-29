@@ -23,7 +23,7 @@ namespace XTrendApp.Web.Parsers.Amazon
             if (count == 0)
                 return products;
 
-            const int maxTestProducts = 1;
+            const int maxTestProducts = 2;
             var maxProducts = Math.Min(maxTestProducts, count);
 
             for (int i = 0; i < maxProducts; i++)

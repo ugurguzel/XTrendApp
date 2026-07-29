@@ -1,4 +1,4 @@
-﻿    using Microsoft.Playwright;
+﻿using Microsoft.Playwright;
 using System.Buffers.Text;
 using XTrendApp.Web.Connectors.Amazon;
 using XTrendApp.Web.Models.Amazon;

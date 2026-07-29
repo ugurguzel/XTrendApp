@@ -110,11 +110,11 @@ namespace XTrendApp.Web.Connectors.Amazon
 
             var products = await _searchParser.ParseAsync(page, baseUrl);
 
-            Console.WriteLine();
-            Console.WriteLine("══════════════════════════════════════════════════════════════════════════════");
-            Console.WriteLine(" SEARCH PARSER");
-            Console.WriteLine("══════════════════════════════════════════════════════════════════════════════");
-            Console.WriteLine();
+            //Console.WriteLine();
+            //Console.WriteLine("══════════════════════════════════════════════════════════════════════════════");
+            //Console.WriteLine(" SEARCH PARSER");
+            //Console.WriteLine("══════════════════════════════════════════════════════════════════════════════");
+            //Console.WriteLine();
 
             int index = 1;
 
@@ -157,23 +157,30 @@ namespace XTrendApp.Web.Connectors.Amazon
 
             foreach (var product in products)
             {
-                Console.WriteLine();
-                Console.WriteLine("══════════════════════════════════════════════════════════════════════════════");
-                Console.WriteLine(" DETAIL PARSER");
-                Console.WriteLine("══════════════════════════════════════════════════════════════════════════════");
-                Console.WriteLine();
+                //Console.WriteLine();
+                //Console.WriteLine("══════════════════════════════════════════════════════════════════════════════");
+                //Console.WriteLine(" DETAIL PARSER");
+                //Console.WriteLine("══════════════════════════════════════════════════════════════════════════════");
+                //Console.WriteLine();
 
-                Console.WriteLine($"ASIN             : {product.Asin}");
-                Console.WriteLine($"Title            : {product.Title}");
-                Console.WriteLine($"URL              : {product.ProductUrl}");
-                Console.WriteLine();
+                //Console.WriteLine($"ASIN             : {product.Asin}");
+                //Console.WriteLine($"Title            : {product.Title}");
+                //Console.WriteLine($"URL              : {product.ProductUrl}");
+                //Console.WriteLine();
+
+                //await page.GotoAsync(
+                //    product.ProductUrl,
+                //    new PageGotoOptions
+                //    {
+                //        WaitUntil = WaitUntilState.DOMContentLoaded
+                //    });
 
                 await page.GotoAsync(
-                    product.ProductUrl,
-                    new PageGotoOptions
-                    {
-                        WaitUntil = WaitUntilState.DOMContentLoaded
-                    });
+    $"{baseUrl}/dp/{product.Asin}",
+    new PageGotoOptions
+    {
+        WaitUntil = WaitUntilState.DOMContentLoaded
+    });
 
                 AmazonDetailModel detail =
                     await _detailParser.ParseAsync(page, product);

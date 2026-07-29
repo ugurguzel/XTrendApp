@@ -4,7 +4,7 @@ public class AmazonVariationSize
 {
     public string Name { get; set; } = "";
 
-    public string? Title { get; set; }
+    //public string? Title { get; set; }
 
     public string Asin { get; set; } = "";
 
@@ -16,6 +16,8 @@ public class AmazonVariationSize
     public int OptionIndex { get; set; }
 
     public string OptionValue { get; set; } = "";
+
+    public string Href { get; set; } = "";
 
     public List<AmazonVariationColor> Colors { get; set; } = new();
 

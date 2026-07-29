@@ -1,4 +1,5 @@
 ﻿using Microsoft.Playwright;
+using System.Text.RegularExpressions;
 using XTrendApp.Web.Models.Amazon;
 
 namespace XTrendApp.Web.Engines.Amazon;
@@ -6,65 +7,54 @@ namespace XTrendApp.Web.Engines.Amazon;
 public class AmazonVariationNavigator
 {
     public async Task<string> GoToSizeAsync(
-    IPage page,
-    AmazonVariationSize size)
+        IPage page,
+        string baseUrl,
+        AmazonVariationSize size)
     {
-        if (size.Selected)
-            return size.Asin;
-
         Console.WriteLine($"Selecting Size : {size.Name}");
 
-        //--------------------------------------------------
-        // BUTTON
-        //--------------------------------------------------
+        await page.GotoAsync(
+            $"{baseUrl}/dp/{size.Asin}",
+            new PageGotoOptions
+            {
+                WaitUntil = WaitUntilState.DOMContentLoaded,
+                Timeout = 60000
+            });
 
-        if (size.OptionIndex < 0)
-        {
-            // Şimdilik button desteği yok
-            return size.Asin;
-        }
 
-        //--------------------------------------------------
-        // DROPDOWN
-        //--------------------------------------------------
+        Console.WriteLine("PAGE TITLE : " + await page.TitleAsync());
 
-        var dropdownButton = page.Locator("#dropdown_selected_size_name");
 
-        if (await dropdownButton.CountAsync() == 0)
-            return size.Asin;
+        // Amazon'da NetworkIdle güvenilir değil.
+        // Bunun yerine Twister'ın oluşmasını bekliyoruz.
 
-        await dropdownButton.ClickAsync();
+        await page.Locator("li[data-asin]")
+            .First
+            .WaitForAsync(new LocatorWaitForOptions
+            {
+                State = WaitForSelectorState.Visible,
+                Timeout = 30000
+            });
 
-        await page
-            .Locator(".a-popover.a-dropdown")
-            .WaitForAsync();
-
-        var option = page.Locator(
-            $"#native_dropdown_selected_size_name_{size.OptionIndex}");
-
-        var previousUrl = page.Url;
-
-        await option.ClickAsync();
-
-        await page.WaitForFunctionAsync(
-        @"previous => window.location.href !== previous",
-        previousUrl);
-
-        await page.WaitForTimeoutAsync(300);
+        // DOM'un tamamen güncellenmesi için kısa bekleme
+        //await page.WaitForTimeoutAsync(500);
 
         Console.WriteLine($"Current URL : {page.Url}");
 
-        var currentAsin = string.Empty;
-
-        var match = System.Text.RegularExpressions.Regex.Match(
+        var match = Regex.Match(
             page.Url,
             @"/dp/([A-Z0-9]{10})");
 
-        if (match.Success)
-        {
-            currentAsin = match.Groups[1].Value;
-        }
+        Console.WriteLine();
+        Console.WriteLine("====================================");
+        Console.WriteLine($"EXPECTED SIZE : {size.Name}");
+        Console.WriteLine($"EXPECTED ASIN : {size.Asin}");
+        Console.WriteLine($"CURRENT URL   : {page.Url}");
+        Console.WriteLine("====================================");
+        Console.WriteLine();
 
-        return currentAsin;
+        return match.Success
+            ? match.Groups[1].Value
+            : string.Empty;
     }
 }

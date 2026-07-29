@@ -29,38 +29,61 @@ public class AmazonVariationScanner
 
         foreach (var size in variation.Sizes)
         {
-            //await page.GotoAsync(
-            //    $"{baseUrl}/dp/{size.Asin}",
-            //    new PageGotoOptions
-            //    {
-            //        WaitUntil = WaitUntilState.DOMContentLoaded
-            //    });
+            
 
-            //await page.WaitForTimeoutAsync(800);
+            await _navigator.GoToSizeAsync(page, baseUrl,
+size);
 
-            await _navigator.GoToSizeAsync(page, size);
+            Console.WriteLine();
+            Console.WriteLine("====================================");
+            Console.WriteLine($"EXPECTED SIZE : {size.Name}");
+            Console.WriteLine($"EXPECTED ASIN : {size.Asin}");
+            Console.WriteLine($"CURRENT URL   : {page.Url}");
+
+            var currentSize = page.Locator("#native_dropdown_selected_size_name");
+
+            if (await currentSize.CountAsync() > 0)
+            {
+                Console.WriteLine($"PAGE SIZE     : {await currentSize.InputValueAsync()}");
+            }
+
+            Console.WriteLine("====================================");
+            Console.WriteLine();
 
             var colors = await _colorParser.ParseAsync(page);
 
-            size.Colors = colors;
-
             Console.WriteLine();
-            Console.WriteLine($"========== SIZE : {size.Name} ==========");
+            Console.WriteLine($"SIZE : {size.Name}");
 
-            foreach (var color in colors)
+            foreach (var c in colors.Take(5))
             {
-                Console.WriteLine(
-                    $"{color.Name} | {color.Asin} | {color.CurrentPrice}");
+                Console.WriteLine($"{c.Name} -> {c.Asin}");
             }
 
-            Console.WriteLine("======================================");
             Console.WriteLine();
 
-            var titleLocator = page.Locator("#productTitle").First;
+            size.Colors = colors;
 
-            if (await titleLocator.CountAsync() > 0)
+            var duplicateGroups = variation.Sizes
+    .SelectMany(s => s.Colors.Select(c => new
+    {
+        Size = s.Name,
+        Color = c.Name,
+        c.Asin
+    }))
+    .GroupBy(x => x.Asin)
+    .Where(g => g.Count() > 1);
+
+            foreach (var group in duplicateGroups)
             {
-                size.Title = (await titleLocator.InnerTextAsync()).Trim();
+                Console.WriteLine($"DUPLICATE ASIN : {group.Key}");
+
+                foreach (var item in group)
+                {
+                    Console.WriteLine($"   {item.Size} -> {item.Color}");
+                }
+
+                Console.WriteLine();
             }
 
             size.Price = await TryGetPriceAsync(page);

@@ -117,18 +117,18 @@ public class ProductImportService
                 sourceId,
                 model.Asin);
 
-            Console.WriteLine();
-            Console.WriteLine("========== PRODUCT IMPORT ==========");
-            Console.WriteLine($"ASIN        : {model.Asin}");
-            Console.WriteLine($"Title       : {model.Title}");
-            Console.WriteLine($"BrandId     : {brandId}");
-            Console.WriteLine($"CollectionId: {collectionId}");
-            Console.WriteLine($"CategoryId  : {categoryId}");
-            Console.WriteLine($"SourceId    : {sourceId}");
-            Console.WriteLine($"Country     : {countryCode}");
-            Console.WriteLine($"Action      : {(existingProduct == null ? "INSERT" : "UPDATE")}");
-            Console.WriteLine("====================================");
-            Console.WriteLine();
+            //Console.WriteLine();
+            //Console.WriteLine("========== PRODUCT IMPORT ==========");
+            //Console.WriteLine($"ASIN        : {model.Asin}");
+            //Console.WriteLine($"Title       : {model.Title}");
+            //Console.WriteLine($"BrandId     : {brandId}");
+            //Console.WriteLine($"CollectionId: {collectionId}");
+            //Console.WriteLine($"CategoryId  : {categoryId}");
+            //Console.WriteLine($"SourceId    : {sourceId}");
+            //Console.WriteLine($"Country     : {countryCode}");
+            //Console.WriteLine($"Action      : {(existingProduct == null ? "INSERT" : "UPDATE")}");
+            //Console.WriteLine("====================================");
+            //Console.WriteLine();
 
             if (existingProduct == null)
             {
@@ -283,6 +283,7 @@ public class ProductImportService
 
             IsActive = true
         };
+
     }
 
     private List<ProductImageEntity> BuildImageEntities(
@@ -335,31 +336,66 @@ public class ProductImportService
     AmazonDetailModel model,
     int displayOrder)
     {
+
+        Console.WriteLine();
+        Console.WriteLine("############ BUILD VARIATION ############");
+        Console.WriteLine($"SIZE PARAM : {size.Name}");
+        Console.WriteLine($"COLOR      : {color.Name}");
+        Console.WriteLine($"ASIN       : {color.Asin}");
+        Console.WriteLine("#########################################");
+        Console.WriteLine();
+
+
+        
+
+
+
+
+        var variationName = size.Name ?? string.Empty;
+
+        Console.WriteLine($"NAME CREATED : {variationName} - {color.Name}");
+
+        if (!string.IsNullOrWhiteSpace(color.Name))
+        {
+            variationName += $" - {color.Name}";
+        }
+
         return new ProductVariationEntity
         {
             ProductId = productId,
 
             SourceVariationId = color.Asin,
 
-            Name = string.IsNullOrWhiteSpace(size.Title)
-    ? model.Title
-    : size.Title,
+            Name = variationName,
 
             SKU = null,
             UPC = null,
             EAN = null,
             GTIN = null,
 
-            ProductUrl = model.ProductUrl,
+            ProductUrl = BuildVariationUrl(model.ProductUrl, color.Asin),
 
             DisplayOrder = displayOrder,
 
-            IsDefault =
-    size.Selected &&
-    color.Selected,
+            IsDefault = size.Selected && color.Selected,
 
             IsActive = true
         };
+    }
+
+    private static string BuildVariationUrl(
+    string productUrl,
+    string asin)
+    {
+        if (string.IsNullOrWhiteSpace(productUrl) ||
+            string.IsNullOrWhiteSpace(asin))
+        {
+            return string.Empty;
+        }
+
+        var uri = new Uri(productUrl);
+
+        return $"{uri.Scheme}://{uri.Host}/dp/{asin}";
     }
 
     private List<ProductVariationOptionEntity> BuildVariationOptionEntities(
@@ -450,20 +486,12 @@ public class ProductImportService
     AmazonDetailModel model,
     AmazonVariationResult variation)
     {
-        Console.WriteLine();
-        Console.WriteLine("========== VARIATION IMPORT ==========");
-        Console.WriteLine($"Parent ASIN : {variation.ParentAsin}");
-        Console.WriteLine($"ProductId   : {productId}");
-        Console.WriteLine($"Sizes       : {variation.Sizes.Count}");
-        Console.WriteLine();
-
         if (variation.Sizes.Count == 0)
         {
             variation.Sizes.Add(new AmazonVariationSize
             {
                 Asin = variation.ParentAsin,
                 Name = "",
-                Title = model.Title,
                 Selected = true,
                 Available = true,
                 CurrentPrice = model.Price,
@@ -471,42 +499,74 @@ public class ProductImportService
                 CurrencyCode = model.CurrencyCode,
                 DeliveryText = null
             });
-
-            Console.WriteLine("No variations found. Default variation created.");
-            Console.WriteLine();
         }
-
 
         var displayOrder = 1;
 
-
-
         foreach (var size in variation.Sizes)
         {
-
             Console.WriteLine();
+            Console.WriteLine("==================================================");
             Console.WriteLine($"SIZE : {size.Name}");
+            Console.WriteLine($"COLOR COUNT : {size.Colors.Count}");
+            Console.WriteLine("FIRST COLORS");
+            Console.WriteLine("--------------------------------------------------");
+
+            foreach (var c in size.Colors.Take(5))
+            {
+                Console.WriteLine($"{c.Name,-20} -> {c.Asin}");
+            }
+
+            Console.WriteLine("==================================================");
+            Console.WriteLine();
 
             foreach (var color in size.Colors)
             {
                 var variationEntity = BuildVariationEntity(
-                productId,
-                size,
-                color,
-                model,
-                displayOrder++);
-                Console.WriteLine(
-                    $"   {color.Name} | {color.Asin} | {color.CurrentPrice}");
+                    productId,
+                    size,
+                    color,
+                    model,
+                    displayOrder++);
+
+                Console.WriteLine("====================================");
+                Console.WriteLine($"Size  : {size.Name}");
+                Console.WriteLine($"Color : {color.Name}");
+                Console.WriteLine($"ASIN  : {color.Asin}");
+                Console.WriteLine("====================================");
 
                 var existingVariation =
-    await _variationRepository.GetBySourceVariationIdAsync(
-        connection,
-        transaction,
-        productId,
-        variationEntity.SourceVariationId);
+                    await _variationRepository.GetBySourceVariationIdAsync(
+                        connection,
+                        transaction,
+                        productId,
+                        variationEntity.SourceVariationId);
+
+                // BURAYA EKLE
+                Console.WriteLine("================================");
+                Console.WriteLine("CHECK VARIATION");
+                Console.WriteLine($"ProductId : {productId}");
+                Console.WriteLine($"ASIN      : {variationEntity.SourceVariationId}");
 
                 if (existingVariation == null)
                 {
+                    Console.WriteLine("FOUND : NO");
+                }
+                else
+                {
+                    Console.WriteLine("FOUND : YES");
+                    Console.WriteLine($"DB Id   : {existingVariation.Id}");
+                    Console.WriteLine($"DB Name : {existingVariation.Name}");
+                    Console.WriteLine($"DB ASIN : {existingVariation.SourceVariationId}");
+                }
+
+                Console.WriteLine("================================");
+
+
+                if (existingVariation == null)
+                {
+                    Console.WriteLine($"INSERT VARIATION : {variationEntity.SourceVariationId}");
+
                     variationEntity.Id =
                         await _variationRepository.InsertAsync(
                             connection,
@@ -515,9 +575,11 @@ public class ProductImportService
                 }
                 else
                 {
+
+                    Console.WriteLine($"UPDATE VARIATION : {variationEntity.SourceVariationId}");
+
                     variationEntity.Id = existingVariation.Id;
 
-                    Console.WriteLine("UPDATE VARIATION...");
                     await _variationRepository.UpdateAsync(
                         connection,
                         transaction,
@@ -525,30 +587,16 @@ public class ProductImportService
                 }
 
                 var optionEntities = BuildVariationOptionEntities(
-        variationEntity.Id,
-        size,
-        color);
-
-                Console.WriteLine("========== SIZE DATA ==========");
-                Console.WriteLine($"ASIN        : {size.Asin}");
-                Console.WriteLine($"Size        : {size.Name}");
-                Console.WriteLine($"Price       : {size.Price}");
-                Console.WriteLine($"List Price  : {size.ListPrice}");
-                Console.WriteLine($"Currency    : {size.CurrencyCode}");
-                Console.WriteLine($"Available   : {size.Available}");
-                Console.WriteLine($"Delivery    : {size.DeliveryText}");
-                Console.WriteLine("===============================");
-                Console.WriteLine();
+                    variationEntity.Id,
+                    size,
+                    color);
 
                 var snapshotEntity = BuildSnapshotEntity(
                     variationEntity.Id,
                     size,
                     color);
 
-                Console.WriteLine("INSERT SNAPSHOT...");
                 snapshotEntity.Id =
-
-
                     await _snapshotRepository.InsertAsync(
                         connection,
                         transaction,
@@ -573,51 +621,45 @@ public class ProductImportService
                     }
                 }
 
-                PrintVariationToConsole(
-                    variationEntity,
-                    optionEntities,
-                    snapshotEntity);
-
+                //PrintVariationToConsole(
+                //    variationEntity,
+                //    optionEntities,
+                //    snapshotEntity);
             }
 
             Console.WriteLine();
-
-
-            
-
-            
         }
 
         await Task.CompletedTask;
     }
 
-    private void PrintVariationToConsole(
-    ProductVariationEntity variation,
-    List<ProductVariationOptionEntity> options,
-    ProductSnapshotEntity snapshot)
-    {
-        Console.WriteLine();
-        Console.WriteLine("==============================================");
-        Console.WriteLine("PRODUCT VARIATION");
-        Console.WriteLine("==============================================");
+    //private void PrintVariationToConsole(
+    //ProductVariationEntity variation,
+    //List<ProductVariationOptionEntity> options,
+    //ProductSnapshotEntity snapshot)
+    //{
+    //    Console.WriteLine();
+    //    Console.WriteLine("==============================================");
+    //    Console.WriteLine("PRODUCT VARIATION");
+    //    Console.WriteLine("==============================================");
 
-        Console.WriteLine($"Child ASIN : {variation.SourceVariationId}");
+    //    Console.WriteLine($"Child ASIN : {variation.SourceVariationId}");
 
-        foreach (var option in options)
-        {
-            Console.WriteLine($"{option.OptionName,-10}: {option.OptionValue}");
-        }
+    //    foreach (var option in options)
+    //    {
+    //        Console.WriteLine($"{option.OptionName,-10}: {option.OptionValue}");
+    //    }
 
-        Console.WriteLine();
-        Console.WriteLine($"Price      : {snapshot.Price}");
-        Console.WriteLine($"List Price : {snapshot.ListPrice}");
-        Console.WriteLine($"Currency   : {snapshot.CurrencyCode}");
-        Console.WriteLine($"In Stock   : {snapshot.IsInStock}");
-        Console.WriteLine($"Delivery   : {snapshot.DeliveryText}");
+    //    Console.WriteLine();
+    //    Console.WriteLine($"Price      : {snapshot.Price}");
+    //    Console.WriteLine($"List Price : {snapshot.ListPrice}");
+    //    Console.WriteLine($"Currency   : {snapshot.CurrencyCode}");
+    //    Console.WriteLine($"In Stock   : {snapshot.IsInStock}");
+    //    Console.WriteLine($"Delivery   : {snapshot.DeliveryText}");
 
-        Console.WriteLine("==============================================");
-        Console.WriteLine();
-    }
+    //    Console.WriteLine("==============================================");
+    //    Console.WriteLine();
+    //}
 
 
 }

@@ -5,27 +5,33 @@ namespace XTrendApp.Web.Engines.Amazon;
 
 public class AmazonColorParser
 {
-    public async Task<List<AmazonVariationColor>> ParseAsync(
-        IPage page)
+    public async Task<List<AmazonVariationColor>> ParseAsync(IPage page)
     {
         var colors = new List<AmazonVariationColor>();
 
-        var items = page.Locator(
-    "#tp-inline-twister-dim-values-container li[data-asin]");
+        var items = page.Locator("li[data-asin]");
+
+
+
 
         var count = await items.CountAsync();
 
-        Console.WriteLine($"Color Swatches : {count}");
+        Console.WriteLine();
+        Console.WriteLine($"COLOR ITEM COUNT : {count}");
+        Console.WriteLine();
+
+        Console.WriteLine("CURRENT PAGE : " + page.Url);
+
         Console.WriteLine();
 
         for (int i = 0; i < count; i++)
         {
             var item = items.Nth(i);
 
-            var isColor =
-    await item.Locator("[id^='color_name_']").CountAsync() > 0;
+            // Bu li gerçekten Color mı?
+            var colorNode = item.Locator("span[id^='color_name_']");
 
-            if (!isColor)
+            if (await colorNode.CountAsync() == 0)
                 continue;
 
             var color = new AmazonVariationColor();
@@ -38,6 +44,10 @@ public class AmazonColorParser
 
             color.Available =
                 (await item.GetAttributeAsync("data-initiallyunavailable")) != "true";
+
+            //--------------------------------------------------
+            // IMAGE / NAME
+            //--------------------------------------------------
 
             var image = item.Locator("img").First;
 
@@ -55,7 +65,7 @@ public class AmazonColorParser
             //--------------------------------------------------
 
             var priceLocator =
-    item.Locator(".apex-pricetopay-value span[aria-hidden='true']").First;
+                item.Locator(".apex-pricetopay-value span[aria-hidden='true']").First;
 
             if (await priceLocator.CountAsync() > 0)
             {
@@ -77,28 +87,55 @@ public class AmazonColorParser
                     color.CurrentPrice = currentPrice;
                 }
 
-                color.CurrencyCode = page.Url.Contains(".co.uk")
-                    ? "GBP"
-                    : "USD";
+                color.CurrencyCode =
+                    page.Url.Contains(".co.uk")
+                        ? "GBP"
+                        : "USD";
             }
 
             //--------------------------------------------------
             // STOCK
             //--------------------------------------------------
 
-            var stockLocator = item.Locator("#twisterAvailability");
-
             color.InStock =
-                await stockLocator.CountAsync() > 0;
+                await item.Locator("#twisterAvailability").CountAsync() > 0;
+
+            //--------------------------------------------------
+            // DEBUG
+            //--------------------------------------------------
+
+            Console.WriteLine(
+                $"COLOR : {color.Name,-20} | ASIN : {color.Asin} | PRICE : {color.CurrentPrice} | STOCK : {color.InStock}");
 
             if (string.IsNullOrWhiteSpace(color.Name))
             {
+                Console.WriteLine();
+                Console.WriteLine("========== EMPTY COLOR ==========");
                 Console.WriteLine(await item.InnerHTMLAsync());
-                break;
+                Console.WriteLine("=================================");
+                Console.WriteLine();
+
+                continue;
             }
 
             colors.Add(color);
         }
+
+        Console.WriteLine();
+        Console.WriteLine($"TOTAL COLORS : {colors.Count}");
+        Console.WriteLine();
+
+
+        Console.WriteLine();
+        Console.WriteLine("========== COLOR PARSER ==========");
+
+        foreach (var c in colors)
+        {
+            Console.WriteLine($"{c.Name,-20} {c.Asin}");
+        }
+
+        Console.WriteLine("==================================");
+        Console.WriteLine();
 
         return colors;
     }
