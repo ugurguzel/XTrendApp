@@ -9,24 +9,22 @@ public class ProductImageRepository : IProductImageRepository
     private const string DeleteSql = """
         DELETE
         FROM ProductImage
-        WHERE ProductId=@ProductId;
+        WHERE ProductVariationId=@ProductVariationId;
         """;
 
     private const string InsertSql = """
 INSERT INTO ProductImage
 (
-    ProductId,
+    ProductVariationId,
     ImageUrl,
-    ImageType,
-    DisplayOrder,
+    SortOrder,
     IsPrimary
 )
 VALUES
 (
-    @ProductId,
+    @ProductVariationId,
     @ImageUrl,
-    @ImageType,
-    @DisplayOrder,
+    @SortOrder,
     @IsPrimary
 );
 """;
@@ -34,27 +32,25 @@ VALUES
     private const string GetSql = """
 SELECT TOP 1 *
 FROM ProductImage
-WHERE ProductId = @ProductId
-AND ImageUrl = @ImageUrl;
+WHERE ProductVariationId = @ProductVariationId;
 """;
 
     private const string UpdateSql = """
 UPDATE ProductImage
 SET
-    ImageType = @ImageType,
-    DisplayOrder = @DisplayOrder,
+    SortOrder = @SortOrder,
     IsPrimary = @IsPrimary
 WHERE Id = @Id;
 """;
 
-    public async Task DeleteByProductIdAsync(
+    public async Task DeleteByProductVariationIdAsync(
         IDbConnection connection,
         IDbTransaction transaction,
-        long productId)
+        long productVariationId)
     {
         await connection.ExecuteAsync(
             DeleteSql,
-            new { ProductId = productId },
+            new { ProductVariationId = productVariationId },
             transaction);
     }
 
@@ -69,17 +65,17 @@ WHERE Id = @Id;
             transaction);
     }
 
-    public async Task<ProductImageEntity?> GetByProductIdAndImageUrlAsync(
+    public async Task<ProductImageEntity?> GetByProductVariationIdAndImageUrlAsync(
     IDbConnection connection,
     IDbTransaction transaction,
-    long productId,
+    long productVariationId,
     string imageUrl)
     {
         return await connection.QueryFirstOrDefaultAsync<ProductImageEntity>(
             GetSql,
             new
             {
-                ProductId = productId,
+                ProductVariationId = productVariationId,
                 ImageUrl = imageUrl
             },
             transaction);

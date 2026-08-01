@@ -5,21 +5,21 @@ namespace XTrendApp.Web.Repositories.ProductImage;
 
 public interface IProductImageRepository
 {
-    Task DeleteByProductIdAsync(
+    Task DeleteByProductVariationIdAsync(
         IDbConnection connection,
         IDbTransaction transaction,
-        long productId);
+        long productVariationId);
 
     Task InsertAsync(
         IDbConnection connection,
         IDbTransaction transaction,
         ProductImageEntity image);
 
-    Task<ProductImageEntity?> GetByProductIdAndImageUrlAsync(
-    IDbConnection connection,
-    IDbTransaction transaction,
-    long productId,
-    string imageUrl);
+    Task<ProductImageEntity?> GetByProductVariationIdAndImageUrlAsync(
+        IDbConnection connection,
+        IDbTransaction transaction,
+        long productVariationId,
+        string imageUrl);
 
     Task UpdateAsync(
         IDbConnection connection,

@@ -21,4 +21,5 @@ public class AmazonVariationColor
     public string? DeliveryText { get; set; }
 
     public string? ImageUrl { get; set; }
+
 }

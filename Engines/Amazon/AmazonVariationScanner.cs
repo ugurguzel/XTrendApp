@@ -2,6 +2,8 @@
 using XTrendApp.Web.Connectors.Amazon;
 using XTrendApp.Web.Models.Amazon;
 using XTrendApp.Web.Common;
+using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace XTrendApp.Web.Engines.Amazon;
 
@@ -10,11 +12,17 @@ public class AmazonVariationScanner
 
     private readonly AmazonVariationNavigator _navigator;
     private readonly AmazonColorParser _colorParser;
+    private readonly AmazonImageParser _imageParser;
 
-    public AmazonVariationScanner(AmazonVariationNavigator navigator, AmazonColorParser colorParser)
+
+    public AmazonVariationScanner(
+        AmazonVariationNavigator navigator,
+        AmazonColorParser colorParser,
+        AmazonImageParser imageParser)
     {
         _navigator = navigator;
         _colorParser = colorParser;
+        _imageParser = imageParser;
     }
 
 
@@ -30,7 +38,15 @@ public class AmazonVariationScanner
 
         foreach (var size in variation.Sizes)
         {
-            
+
+            if (variation.Sizes.IndexOf(size) == 0)
+            {
+                var html = await page.ContentAsync();
+
+                //await File.WriteAllTextAsync(
+                //    @"C:\Projects\Temp\amazon.html",
+                //    html);
+            }
 
             await _navigator.GoToSizeAsync(page, baseUrl,
 size);
@@ -53,6 +69,17 @@ size);
 
             var colors = await _colorParser.ParseAsync(page);
 
+            size.Colors = colors;
+
+            await _imageParser.ParseAsync(page, size);
+
+            foreach (var color in colors)
+{
+    var key = $"{size.Name} {color.Name}";
+
+    
+}
+
             Logger.Debug("");
             Logger.Debug($"SIZE : {size.Name}");
 
@@ -63,7 +90,7 @@ size);
 
             Logger.Debug("");
 
-            size.Colors = colors;
+            
 
             var duplicateGroups = variation.Sizes
     .SelectMany(s => s.Colors.Select(c => new
@@ -93,8 +120,10 @@ size);
     ? "USD"
     : "GBP";
 
-            size.ImageUrl = await TryGetImageAsync(page);
+            //size.ImageUrl = await TryGetImageAsync(page);
         }
+
+
     }
 
     private async Task<decimal?> TryGetPriceAsync(IPage page)
@@ -172,41 +201,4 @@ size);
         return null;
     }
 
-    private async Task<string?> TryGetImageAsync(IPage page)
-    {
-        var image = page.Locator("#landingImage");
-
-        try
-        {
-            await image.WaitForAsync(new()
-            {
-                State = WaitForSelectorState.Visible,
-                Timeout = 3000
-            });
-        }
-        catch
-        {
-            return null;
-        }
-
-        var src = await image.GetAttributeAsync("src");
-
-        if (!string.IsNullOrWhiteSpace(src))
-            return src;
-
-        var hires = await image.GetAttributeAsync("data-old-hires");
-
-        if (!string.IsNullOrWhiteSpace(hires))
-            return hires;
-
-        Logger.Debug("");
-        Logger.Debug("========== IMAGE DEBUG ==========");
-        Logger.Debug($"Page : {page.Url}");
-        Logger.Debug($"src  : {src}");
-        Logger.Debug($"hires: {hires}");
-        Logger.Debug("=================================");
-        Logger.Debug("");
-
-        return null;
-    }
 }

@@ -81,6 +81,8 @@ builder.Services.AddScoped<AmazonButtonParser>();
 
 builder.Services.AddScoped<AmazonColorParser>();
 
+builder.Services.AddScoped<AmazonImageParser>();
+
 #region Repositories
 
 builder.Services.AddScoped<IBrandRepository, BrandRepository>();

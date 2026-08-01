@@ -120,26 +120,7 @@ public class ProductImportService
                 sourceId,
                 model.Asin);
 
-            //if (existingProduct == null)
-            //{
-            //    product.Id = await _productRepository.InsertAsync(
-            //        connection,
-            //        transaction,
-            //        product);
-            //}
-            //else
-            //{
-            //    product.Id = existingProduct.Id;
-
-            //    Logger.Info("UPDATE PRODUCT...");
-
-            //    await _productRepository.UpdateAsync(
-            //        connection,
-            //        transaction,
-            //        product);
-            //}
-
-            
+                       
 
             if (existingProduct == null)
             {
@@ -166,36 +147,7 @@ public class ProductImportService
                 Logger.Info("UPDATE PRODUCT...");
             }
 
-            var images = BuildImageEntities(
-    product.Id,
-    model);
-
-            foreach (var image in images)
-            {
-                var existingImage =
-                    await _productImageRepository.GetByProductIdAndImageUrlAsync(
-                        connection,
-                        transaction,
-                        image.ProductId,
-                        image.ImageUrl);
-
-                if (existingImage == null)
-                {
-                    await _productImageRepository.InsertAsync(
-                        connection,
-                        transaction,
-                        image);
-                }
-                else
-                {
-                    image.Id = existingImage.Id;
-
-                    await _productImageRepository.UpdateAsync(
-                        connection,
-                        transaction,
-                        image);
-                }
-            }
+    
 
             await ImportVariationsAsync(
     connection,
@@ -305,48 +257,7 @@ public class ProductImportService
 
     }
 
-    private List<ProductImageEntity> BuildImageEntities(
-    long productId,
-    AmazonDetailModel model)
-    {
-        var images = new List<ProductImageEntity>();
-
-        // Main Image
-        if (!string.IsNullOrWhiteSpace(model.ImageUrl))
-        {
-            images.Add(new ProductImageEntity
-            {
-                ProductId = productId,
-                ImageUrl = model.ImageUrl,
-                ImageType = "Main",
-                DisplayOrder = 1,
-                IsPrimary = true
-            });
-        }
-
-        // Gallery Images
-        var order = 2;
-
-        foreach (var imageUrl in model.Images)
-        {
-            if (string.IsNullOrWhiteSpace(imageUrl))
-                continue;
-
-            if (imageUrl == model.ImageUrl)
-                continue;
-
-            images.Add(new ProductImageEntity
-            {
-                ProductId = productId,
-                ImageUrl = imageUrl,
-                ImageType = "Gallery",
-                DisplayOrder = order++,
-                IsPrimary = false
-            });
-        }
-
-        return images;
-    }
+    
 
     private ProductVariationEntity BuildVariationEntity(
     long productId,
@@ -508,6 +419,40 @@ public class ProductImportService
         };
     }
 
+    private async Task<bool> ImportVariationImageAsync(
+    IDbConnection connection,
+    IDbTransaction transaction,
+    long productVariationId,
+    AmazonVariationColor color)
+    {
+        if (string.IsNullOrWhiteSpace(color.ImageUrl))
+            return false;
+
+        var existing =
+            await _productImageRepository
+                .GetByProductVariationIdAndImageUrlAsync(
+                    connection,
+                    transaction,
+                    productVariationId,
+                    color.ImageUrl);
+
+        if (existing != null)
+            return false;
+
+        await _productImageRepository.InsertAsync(
+            connection,
+            transaction,
+            new ProductImageEntity
+            {
+                ProductVariationId = productVariationId,
+                ImageUrl = color.ImageUrl,
+                SortOrder = 1,
+                IsPrimary = true
+            });
+
+        return true;
+    }
+
 
 
     private async Task ImportVariationsAsync(
@@ -537,6 +482,8 @@ public class ProductImportService
 
         var insertedCount = 0;
         var updatedCount = 0;
+
+        int insertedImageCount = 0;
 
         foreach (var size in variation.Sizes)
         {
@@ -625,6 +572,15 @@ public class ProductImportService
                     updatedCount++;
                 }
 
+                if (await ImportVariationImageAsync(
+        connection,
+        transaction,
+        variationEntity.Id,
+        color))
+                {
+                    insertedImageCount++;
+                }
+
                 var optionEntities = BuildVariationOptionEntities(
                     variationEntity.Id,
                     size,
@@ -674,6 +630,7 @@ public class ProductImportService
         Logger.Success($"Product Action      : {productAction}");
         Logger.Success($"Inserted Variations : {insertedCount}");
         Logger.Success($"Updated Variations  : {updatedCount}");
+        Logger.Success($"Inserted Images     : {insertedImageCount}");
         Logger.Success($"Total Variations    : {variationCount}");
         Logger.Success($"Inserted Snapshots  : {variationCount}");
         Logger.Success("====================================");
