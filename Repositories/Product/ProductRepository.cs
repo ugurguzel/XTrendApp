@@ -1,9 +1,10 @@
 ﻿using Dapper;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
+using XTrendApp.Web.Data;
 using XTrendApp.Web.Models.Entities;
 using XTrendApp.Web.Models.Product;
-using XTrendApp.Web.Data;
 
 namespace XTrendApp.Web.Repositories.Product;
 
@@ -189,6 +190,158 @@ ORDER BY
     p.Id DESC;
 """;
 
+    private const string GetDetailSql = """
+SELECT
+    p.Id,
+    p.Name,
+    b.Name AS Brand,
+    s.Name AS Source,
+    p.ProductUrl,
+
+    snap.Rating,
+    snap.ReviewCount,
+    variationCount.VariationCount,
+    snap.CapturedAt AS LastCapturedAt
+
+FROM Product p
+
+INNER JOIN Brand b
+    ON b.Id = p.BrandId
+
+INNER JOIN Source s
+    ON s.Id = p.SourceId
+
+OUTER APPLY
+(
+    SELECT
+        COUNT(*) AS VariationCount
+
+    FROM ProductVariation pv
+
+    WHERE pv.ProductId = p.Id
+      AND pv.IsActive = 1
+
+) variationCount
+
+OUTER APPLY
+(
+    SELECT TOP 1
+        ps.Rating,
+        ps.ReviewCount,
+        ps.CapturedAt
+
+    FROM ProductVariation pvLatest
+
+    INNER JOIN ProductSnapshot ps
+        ON ps.ProductVariationId = pvLatest.Id
+
+    WHERE pvLatest.ProductId = p.Id
+
+    ORDER BY
+        ps.CapturedAt DESC,
+        ps.Id DESC
+
+) snap
+
+WHERE p.Id = @ProductId;
+""";
+
+    private const string GetAttributesSql = """
+SELECT
+    AttributeGroup AS [Group],
+    AttributeName AS [Name],
+    AttributeValue AS [Value]
+FROM ProductAttribute
+WHERE ProductId = @ProductId
+ORDER BY
+    SortOrder,
+    Id;
+""";
+
+    private const string GetVariationsSql = """
+SELECT
+    pv.Id,
+
+    pv.SourceVariationId AS ASIN,
+
+    pv.Name,
+
+    MAX(CASE
+        WHEN LOWER(pvo.OptionName) = 'color'
+        THEN pvo.OptionValue
+    END) AS Color,
+
+    MAX(CASE
+        WHEN LOWER(pvo.OptionName) = 'size'
+        THEN pvo.OptionValue
+    END) AS Size,
+
+    snap.Price,
+
+    snap.CurrencyCode,
+
+    pv.IsActive,
+
+    pv.ProductUrl
+
+FROM ProductVariation pv
+
+LEFT JOIN ProductVariationOption pvo
+    ON pvo.ProductVariationId = pv.Id
+
+OUTER APPLY
+(
+    SELECT TOP 1
+        ps.Price,
+        ps.CurrencyCode
+
+    FROM ProductSnapshot ps
+
+    WHERE ps.ProductVariationId = pv.Id
+
+    ORDER BY
+        ps.CapturedAt DESC,
+        ps.Id DESC
+
+) snap
+
+WHERE pv.ProductId = @ProductId
+
+GROUP BY
+    pv.Id,
+    pv.SourceVariationId,
+    pv.Name,
+    snap.Price,
+    snap.CurrencyCode,
+    pv.IsActive,
+    pv.ProductUrl,
+    pv.DisplayOrder
+
+ORDER BY
+    pv.DisplayOrder,
+    pv.Id;
+""";
+
+
+    private const string GetReviewHistorySql = """
+SELECT
+    MAX(ps.CapturedAt) AS CapturedAt,
+    MAX(ps.ReviewCount) AS ReviewCount
+
+FROM ProductVariation pv
+
+INNER JOIN ProductSnapshot ps
+    ON ps.ProductVariationId = pv.Id
+
+WHERE pv.ProductId = @ProductId
+  AND ps.ReviewCount IS NOT NULL
+
+GROUP BY
+    CONVERT(datetime2(0), ps.CapturedAt)
+
+ORDER BY
+    MAX(ps.CapturedAt);
+""";
     #endregion
 
     public async Task<ProductEntity?> GetBySourceProductIdAsync(
@@ -267,6 +420,64 @@ ORDER BY
 
         return await connection.QueryAsync<ProductListViewModel>(
             GetListSql);
+    }
+
+    public async Task<ProductDetailViewModel?> GetDetailAsync(
+    long productId)
+    {
+        using var connection = _context.CreateConnection();
+
+        return await connection.QueryFirstOrDefaultAsync<ProductDetailViewModel>(
+            GetDetailSql,
+            new
+            {
+                ProductId = productId
+            });
+    }
+
+    public async Task<List<ProductAttributeViewModel>> GetAttributesAsync(
+    long productId)
+    {
+        using var connection = _context.CreateConnection();
+
+        var result = await connection.QueryAsync<ProductAttributeViewModel>(
+            GetAttributesSql,
+            new
+            {
+                ProductId = productId
+            });
+
+        return result.ToList();
+    }
+
+    public async Task<List<ProductVariationViewModel>> GetVariationsAsync(
+    long productId)
+    {
+        using var connection = _context.CreateConnection();
+
+        var result = await connection.QueryAsync<ProductVariationViewModel>(
+            GetVariationsSql,
+            new
+            {
+                ProductId = productId
+            });
+
+        return result.ToList();
+    }
+
+    public async Task<List<ProductReviewHistoryViewModel>> GetReviewHistoryAsync(
+    long productId)
+    {
+        using var connection = _context.CreateConnection();
+
+        var result = await connection.QueryAsync<ProductReviewHistoryViewModel>(
+            GetReviewHistorySql,
+            new
+            {
+                ProductId = productId
+            });
+
+        return result.ToList();
     }
 
 }

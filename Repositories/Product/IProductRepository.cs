@@ -35,4 +35,12 @@ public interface IProductRepository
 
     Task<IEnumerable<ProductListViewModel>> GetListAsync();
 
+    Task<ProductDetailViewModel?> GetDetailAsync(long productId);
+
+    Task<List<ProductAttributeViewModel>> GetAttributesAsync(long productId);
+
+    Task<List<ProductVariationViewModel>> GetVariationsAsync(long productId);
+
+    Task<List<ProductReviewHistoryViewModel>> GetReviewHistoryAsync(long productId);
+
 }

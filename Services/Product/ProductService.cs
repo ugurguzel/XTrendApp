@@ -18,4 +18,24 @@ public class ProductService
     {
         return await _productRepository.GetListAsync();
     }
+
+    public async Task<ProductDetailViewModel?> GetDetailAsync(
+    long productId)
+    {
+        var detail = await _productRepository.GetDetailAsync(productId);
+
+        if (detail == null)
+            return null;
+
+        detail.Attributes =
+            await _productRepository.GetAttributesAsync(productId);
+
+        detail.Variations =
+            await _productRepository.GetVariationsAsync(productId);
+
+        detail.ReviewHistory =
+            await _productRepository.GetReviewHistoryAsync(productId);
+
+        return detail;
+    }
 }

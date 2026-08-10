@@ -23,4 +23,6 @@ public class ProductDetailViewModel
     public List<ProductAttributeViewModel> Attributes { get; set; } = new();
 
     public List<ProductVariationViewModel> Variations { get; set; } = new();
+
+    public List<ProductReviewHistoryViewModel> ReviewHistory { get; set; } = new();
 }
