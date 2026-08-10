@@ -71,7 +71,7 @@ size);
 
             size.Colors = colors;
 
-            await _imageParser.ParseAsync(page, size);
+            //await _imageParser.ParseAsync(page, size);
 
             foreach (var color in colors)
 {

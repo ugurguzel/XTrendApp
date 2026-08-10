@@ -20,4 +20,15 @@ public interface IProductVariationRepository
         IDbConnection connection,
         IDbTransaction transaction,
         ProductVariationEntity variation);
+
+    Task<List<ProductVariationEntity>> GetByProductIdAsync(
+    IDbConnection connection,
+    IDbTransaction transaction,
+    long productId);
+
+    Task SetActiveAsync(
+        IDbConnection connection,
+        IDbTransaction transaction,
+        long variationId,
+        bool isActive);
 }

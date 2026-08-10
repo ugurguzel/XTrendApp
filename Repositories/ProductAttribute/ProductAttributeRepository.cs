@@ -2,7 +2,7 @@
 using Dapper;
 using XTrendApp.Web.Models.Entities;
 
-namespace XTrendApp.Web.Repositories.Attribute;
+namespace XTrendApp.Web.Repositories.ProductAttribute;
 
 public class ProductAttributeRepository : IProductAttributeRepository
 {
@@ -19,7 +19,7 @@ INSERT INTO ProductAttribute
     AttributeGroup,
     AttributeName,
     AttributeValue,
-    SortOrder
+    DisplayOrder
 )
 VALUES
 (
@@ -27,7 +27,7 @@ VALUES
     @AttributeGroup,
     @AttributeName,
     @AttributeValue,
-    @SortOrder
+    @DisplayOrder
 );
 """;
 

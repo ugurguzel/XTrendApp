@@ -1,7 +1,7 @@
 ﻿using Microsoft.Playwright;
 using System.Text.RegularExpressions;
-using XTrendApp.Web.Models.Amazon;
 using XTrendApp.Web.Common;
+using XTrendApp.Web.Models.Amazon;
 
 namespace XTrendApp.Web.Engines.Amazon;
 
@@ -22,24 +22,10 @@ public class AmazonVariationNavigator
                 Timeout = 60000
             });
 
+        // Sayfanın tamamen oturması için kısa bekleme
+        await page.WaitForTimeoutAsync(300);
 
         Logger.Debug("PAGE TITLE : " + await page.TitleAsync());
-
-
-        // Amazon'da NetworkIdle güvenilir değil.
-        // Bunun yerine Twister'ın oluşmasını bekliyoruz.
-
-        await page.Locator("li[data-asin]")
-            .First
-            .WaitForAsync(new LocatorWaitForOptions
-            {
-                State = WaitForSelectorState.Visible,
-                Timeout = 30000
-            });
-
-        // DOM'un tamamen güncellenmesi için kısa bekleme
-        //await page.WaitForTimeoutAsync(500);
-
         Logger.Debug($"Current URL : {page.Url}");
 
         var match = Regex.Match(
@@ -51,6 +37,7 @@ public class AmazonVariationNavigator
         Logger.Debug($"EXPECTED SIZE : {size.Name}");
         Logger.Debug($"EXPECTED ASIN : {size.Asin}");
         Logger.Debug($"CURRENT URL   : {page.Url}");
+        Logger.Debug($"PAGE TITLE    : {await page.TitleAsync()}");
         Logger.Debug("====================================");
         Logger.Debug("");
 

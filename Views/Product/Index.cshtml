@@ -1,26 +1,309 @@
-﻿@{
+﻿@model IEnumerable<XTrendApp.Web.Models.Product.ProductListViewModel>
+
+@{
     ViewData["Title"] = "Products";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-3">
+<div class="page-header d-print-none mb-3">
+    <div class="container-xl">
+        <div class="row align-items-center">
 
-    <div>
+            <div class="col">
+                <h2 class="page-title">
+                    Products
+                </h2>
 
-        <h2 class="page-title">
-            Products
-        </h2>
+                <div class="text-secondary mt-1">
+                    Track product collections and their performance
+                </div>
+            </div>
 
-        <div class="text-secondary">
-            Product List
+        </div>
+    </div>
+</div>
+
+
+<div class="page-body">
+    <div class="container-xl">
+
+        <div class="card">
+
+            <div class="card-header">
+                <h3 class="card-title">
+                    Product Collections
+                </h3>
+
+                <div class="card-actions">
+                    <span class="text-secondary">
+                        @Model.Count() products
+                    </span>
+                </div>
+            </div>
+
+
+            <div class="table-responsive">
+
+                <table class="table table-vcenter table-hover">
+
+                    <thead>
+                        <tr>
+
+                            <th style="width: 72px;"></th>
+
+                            <th>
+                                Product
+                            </th>
+
+                            <th>
+                                Brand
+                            </th>
+
+                            <th>
+                                Marketplace
+                            </th>
+
+                            <th class="text-center">
+                                Variations
+                            </th>
+
+                            <th class="text-center">
+                                Rating
+                            </th>
+
+                            <th class="text-end">
+                                Reviews
+                            </th>
+
+                            <th>
+                                Last Scan
+                            </th>
+
+                            <th style="width: 50px;"></th>
+
+                        </tr>
+                    </thead>
+
+
+                    <tbody>
+
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+
+                                <!-- IMAGE -->
+                                <td>
+
+                                    @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
+                                    {
+                                        <span class="avatar avatar-md rounded"
+                                              style="background-image: url('@item.ImageUrl');">
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="avatar avatar-md rounded bg-secondary-lt">
+                                            <i class="ti ti-photo fs-2 text-secondary"></i>
+                                        </span>
+                                    }
+
+                                </td>
+
+
+                                <!-- PRODUCT -->
+                                <td>
+
+                                    <div class="d-flex flex-column">
+
+                                        <a href="/Product/Detail/@item.Id"
+                                           class="text-reset fw-semibold product-name"
+                                           title="@item.Name">
+
+                                            @item.Name
+
+                                        </a>
+
+                                        <div class="text-secondary small mt-1">
+
+                                            @item.VariationCount
+                                            @(item.VariationCount == 1 ? "variation" : "variations")
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- BRAND -->
+                                <td>
+
+                                    @if (!string.IsNullOrWhiteSpace(item.Brand))
+                                    {
+                                        <span class="fw-medium">
+                                            @item.Brand
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-secondary">
+                                            N/A
+                                        </span>
+                                    }
+
+                                </td>
+
+
+                                <!-- SOURCE -->
+                                <td>
+
+                                    @if (!string.IsNullOrWhiteSpace(item.Source))
+                                    {
+                                        <div class="d-flex align-items-center gap-2">
+
+                                            <span class="avatar avatar-xs">
+                                                <i class="ti ti-shopping-cart"></i>
+                                            </span>
+
+                                            <span>
+                                                @item.Source
+                                            </span>
+
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-secondary">
+                                            N/A
+                                        </span>
+                                    }
+
+                                </td>
+
+
+                                <!-- VARIATIONS -->
+                                <td class="text-center">
+
+                                    <span class="badge bg-yellow-lt">
+                                        @item.VariationCount
+                                    </span>
+
+                                </td>
+
+
+                                <!-- RATING -->
+                                <td class="text-center">
+
+                                    @if (item.Rating.HasValue)
+                                    {
+                                        <span class="text-nowrap">
+
+                                            <span class="text-yellow">
+                                                ★
+                                            </span>
+
+                                            <span class="fw-medium">
+                                                @item.Rating.Value.ToString("0.0")
+                                            </span>
+
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-secondary">
+                                            N/A
+                                        </span>
+                                    }
+
+                                </td>
+
+
+                                <!-- REVIEWS -->
+                                <td class="text-end">
+
+                                    @if (item.ReviewCount.HasValue)
+                                    {
+                                        <span class="fw-medium">
+                                            @item.ReviewCount.Value.ToString("N0")
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-secondary">
+                                            N/A
+                                        </span>
+                                    }
+
+                                </td>
+
+
+                                <!-- LAST SCAN -->
+                                <td>
+
+                                    @if (item.LastCapturedAt.HasValue)
+                                    {
+                                        <div class="d-flex flex-column">
+
+                                            <span class="fw-medium">
+                                                @item.LastCapturedAt.Value.ToString("dd.MM.yyyy")
+                                            </span>
+
+                                            <span class="text-secondary small">
+                                                @item.LastCapturedAt.Value.ToString("HH:mm")
+                                            </span>
+
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-secondary">
+                                            N/A
+                                        </span>
+                                    }
+
+                                </td>
+
+
+                                <!-- ACTION -->
+                                <td>
+
+                                    <a href="/Product/Detail/@item.Id"
+                                       class="btn btn-ghost-secondary btn-icon"
+                                       title="View product">
+
+                                        <i class="ti ti-chevron-right"></i>
+
+                                    </a>
+
+                                </td>
+
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
         </div>
 
     </div>
-
 </div>
 
-<div id="productGrid"></div>
 
-@section Scripts
-{
-    <script src="~/js/product.js"></script>
-}
+<style>
+
+    .product-name {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        line-height: 1.35;
+        max-width: 520px;
+    }
+
+    .table td {
+        vertical-align: middle;
+    }
+
+</style>

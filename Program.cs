@@ -8,7 +8,7 @@ using XTrendApp.Web.Connectors.Wayfair;
 using XTrendApp.Web.Data;
 using XTrendApp.Web.Engines.Amazon;
 using XTrendApp.Web.Parsers.Amazon;
-using XTrendApp.Web.Repositories.Attribute;
+using XTrendApp.Web.Repositories.ProductAttribute;
 using XTrendApp.Web.Repositories.Brand;
 using XTrendApp.Web.Repositories.Category;
 using XTrendApp.Web.Repositories.Collection;
@@ -102,6 +102,8 @@ builder.Services.AddScoped<IProductDocumentRepository, ProductDocumentRepository
 #endregion
 
 builder.Services.AddScoped<ProductImportService>();
+
+builder.Services.AddScoped<ProductService>();
 
 builder.Services.AddAuthentication(
         CookieAuthenticationDefaults.AuthenticationScheme)

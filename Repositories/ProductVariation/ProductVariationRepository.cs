@@ -64,6 +64,21 @@ public class ProductVariationRepository : IProductVariationRepository
         WHERE Id = @Id;
         """;
 
+    private const string SelectByProductIdSql = """
+SELECT *
+FROM ProductVariation
+WHERE ProductId = @ProductId;
+""";
+
+    private const string SetActiveSql = """
+UPDATE ProductVariation
+SET
+    IsActive = @IsActive,
+    UpdatedAt = SYSDATETIME()
+WHERE Id = @VariationId
+  AND IsActive <> @IsActive;
+""";
+
     #endregion
 
     public async Task<ProductVariationEntity?> GetBySourceVariationIdAsync(
@@ -105,5 +120,37 @@ public class ProductVariationRepository : IProductVariationRepository
 
         
 
+    }
+
+    public async Task<List<ProductVariationEntity>> GetByProductIdAsync(
+    IDbConnection connection,
+    IDbTransaction transaction,
+    long productId)
+    {
+        var result = await connection.QueryAsync<ProductVariationEntity>(
+            SelectByProductIdSql,
+            new
+            {
+                ProductId = productId
+            },
+            transaction);
+
+        return result.ToList();
+    }
+
+    public async Task SetActiveAsync(
+        IDbConnection connection,
+        IDbTransaction transaction,
+        long variationId,
+        bool isActive)
+    {
+        await connection.ExecuteAsync(
+            SetActiveSql,
+            new
+            {
+                VariationId = variationId,
+                IsActive = isActive
+            },
+            transaction);
     }
 }

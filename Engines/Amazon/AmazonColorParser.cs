@@ -140,6 +140,12 @@ public class AmazonColorParser
             Logger.Debug($"{c.Name,-20} {c.Asin}");
         }
 
+        for (int i = 0; i < colors.Count; i++)
+        {
+            Logger.Debug(
+                $"{i:00} | {colors[i].Name} | {colors[i].Asin}");
+        }
+
         Logger.Debug("==================================");
         Logger.Debug("");
 

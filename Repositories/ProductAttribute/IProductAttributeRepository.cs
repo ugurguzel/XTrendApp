@@ -1,7 +1,7 @@
 ﻿using System.Data;
 using XTrendApp.Web.Models.Entities;
 
-namespace XTrendApp.Web.Repositories.Attribute;
+namespace XTrendApp.Web.Repositories.ProductAttribute;
 
 public interface IProductAttributeRepository
 {

@@ -12,7 +12,7 @@ public class ProductAttributeEntity
 
     public string? AttributeValue { get; set; }
 
-    public int SortOrder { get; set; }
+    public int DisplayOrder { get; set; }
 
     public DateTime CreatedAt { get; set; }
 }

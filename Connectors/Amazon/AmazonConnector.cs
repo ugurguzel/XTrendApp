@@ -119,10 +119,8 @@ namespace XTrendApp.Web.Connectors.Amazon
                     _ => string.Empty
                 };
 
-                Logger.Info($"Product #{index++}");
-                
-
-                Logger.Info($"Product {index++}/{products.Count}");
+                Logger.Info($"Processing Product {index} of {products.Count}");
+                index++;
                 Logger.Info($"ASIN : {product.Asin}");
                 Logger.Info("");
 

@@ -24,7 +24,6 @@
     <Folder Include="Areas\" />
     <Folder Include="Models\Connector\" />
     <Folder Include="Models\Core\" />
-    <Folder Include="Models\Product\" />
     <Folder Include="Services\Connector\" />
   </ItemGroup>
 

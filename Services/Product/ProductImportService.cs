@@ -3,7 +3,7 @@ using System.Drawing;
 using XTrendApp.Web.Data;
 using XTrendApp.Web.Models.Amazon;
 using XTrendApp.Web.Models.Entities;
-using XTrendApp.Web.Repositories.Attribute;
+using XTrendApp.Web.Repositories.ProductAttribute;
 using XTrendApp.Web.Repositories.Brand;
 using XTrendApp.Web.Repositories.Category;
 using XTrendApp.Web.Repositories.Collection;
@@ -147,7 +147,11 @@ public class ProductImportService
                 Logger.Info("UPDATE PRODUCT...");
             }
 
-    
+            await ImportProductAttributesAsync(
+            connection,
+            transaction,
+            product.Id,
+            model);
 
             await ImportVariationsAsync(
     connection,
@@ -377,7 +381,8 @@ public class ProductImportService
     private ProductSnapshotEntity BuildSnapshotEntity(
     long variationId,
     AmazonVariationSize size,
-    AmazonVariationColor color)
+    AmazonVariationColor color,
+    AmazonDetailModel model)
     {
         return new ProductSnapshotEntity
         {
@@ -393,9 +398,9 @@ public class ProductImportService
 
             CurrencyCode = color.CurrencyCode,
 
-            Rating = null,
+            Rating = model.Rating,
 
-            ReviewCount = null,
+            ReviewCount = model.ReviewCount,
 
             StockQuantity = null,
 
@@ -419,41 +424,162 @@ public class ProductImportService
         };
     }
 
-    private async Task<bool> ImportVariationImageAsync(
+    //private async Task<bool> ImportVariationImageAsync(
+    //IDbConnection connection,
+    //IDbTransaction transaction,
+    //long productVariationId,
+    //AmazonVariationColor color)
+    //{
+    //    if (string.IsNullOrWhiteSpace(color.ImageUrl))
+    //        return false;
+
+    //    var existing =
+    //        await _productImageRepository
+    //            .GetByProductVariationIdAndImageUrlAsync(
+    //                connection,
+    //                transaction,
+    //                productVariationId,
+    //                color.ImageUrl);
+
+    //    if (existing != null)
+    //        return false;
+
+    //    await _productImageRepository.InsertAsync(
+    //        connection,
+    //        transaction,
+    //        new ProductImageEntity
+    //        {
+    //            ProductVariationId = productVariationId,
+    //            ImageUrl = color.ImageUrl,
+    //            SortOrder = 1,
+    //            IsPrimary = true
+    //        });
+
+    //    return true;
+    //}
+
+    private async Task ImportProductAttributesAsync(
     IDbConnection connection,
     IDbTransaction transaction,
-    long productVariationId,
-    AmazonVariationColor color)
+    long productId,
+    AmazonDetailModel model)
     {
-        if (string.IsNullOrWhiteSpace(color.ImageUrl))
-            return false;
-
-        var existing =
-            await _productImageRepository
-                .GetByProductVariationIdAndImageUrlAsync(
-                    connection,
-                    transaction,
-                    productVariationId,
-                    color.ImageUrl);
-
-        if (existing != null)
-            return false;
-
-        await _productImageRepository.InsertAsync(
+        // Önce eski kayıtları temizle
+        await _attributeRepository.DeleteByProductIdAsync(
             connection,
             transaction,
-            new ProductImageEntity
-            {
-                ProductVariationId = productVariationId,
-                ImageUrl = color.ImageUrl,
-                SortOrder = 1,
-                IsPrimary = true
-            });
+            productId);
 
-        return true;
+        var displayOrder = 1;
+
+        // ---------- General ----------
+        await InsertAttributeAsync(
+            connection,
+            transaction,
+            productId,
+            "General",
+            "Brand",
+            model.Brand,
+            displayOrder++);
+
+        await InsertAttributeAsync(
+            connection,
+            transaction,
+            productId,
+            "General",
+            "Collection",
+            model.Collection,
+            displayOrder++);
+
+        await InsertAttributeAsync(
+            connection,
+            transaction,
+            productId,
+            "General",
+            "Rating",
+            model.Rating?.ToString(),
+            displayOrder++);
+
+        await InsertAttributeAsync(
+            connection,
+            transaction,
+            productId,
+            "General",
+            "Review Count",
+            model.ReviewCount?.ToString(),
+            displayOrder++);
+
+        // ---------- Amazon Sections ----------
+        foreach (var section in model.Sections)
+        {
+            foreach (var item in section.Value)
+            {
+                if (SkipAttribute(item.Key))
+                    continue;
+
+                await InsertAttributeAsync(
+                    connection,
+                    transaction,
+                    productId,
+                    section.Key,
+                    item.Key,
+                    item.Value,
+                    displayOrder++);
+            }
+        }
     }
 
+    
 
+    private static readonly HashSet<string> IgnoredAttributes =
+[
+    "ASIN",
+    "Brand Name",
+    "Collection",
+    "Customer Reviews",
+
+    "Size",
+    "Dimensions",
+    "Item Dimensions",
+    "Rug Size",
+
+    "Best Sellers Rank",
+    "Unit Count",
+    "Number of Pieces"
+];
+
+    private static bool SkipAttribute(string attributeName)
+    {
+        if (string.IsNullOrWhiteSpace(attributeName))
+            return true;
+
+        return IgnoredAttributes.Contains(attributeName.Trim());
+    }
+
+    private async Task InsertAttributeAsync(
+    IDbConnection connection,
+    IDbTransaction transaction,
+    long productId,
+    string group,
+    string name,
+    string? value,
+    int displayOrder)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return;
+
+        await _attributeRepository.InsertAsync(
+            connection,
+            transaction,
+            new ProductAttributeEntity
+            {
+                ProductId = productId,
+                AttributeGroup = group,
+                AttributeName = name,
+                AttributeValue = value.Trim(),
+                DisplayOrder = displayOrder
+            });
+    }
 
     private async Task ImportVariationsAsync(
     IDbConnection connection,
@@ -478,12 +604,66 @@ public class ProductImportService
             });
         }
 
+        // Amazon'dan gelen tüm Child ASIN'leri topla
+        var currentAsins = variation.Sizes
+            .SelectMany(x => x.Colors)
+            .Select(x => x.Asin)
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        // DB'deki tüm varyasyonları al
+        var dbVariations =
+            await _variationRepository.GetByProductIdAsync(
+                connection,
+                transaction,
+                productId);
+
+        var passiveCount = 0;
+
+        // Amazon'da artık olmayan aktif varyasyonları pasif yap
+        foreach (var dbVariation in dbVariations)
+        {
+            if (!dbVariation.IsActive)
+                continue;
+
+            if (currentAsins.Contains(dbVariation.SourceVariationId))
+                continue;
+
+            await _variationRepository.SetActiveAsync(
+                connection,
+                transaction,
+                dbVariation.Id,
+                false);
+
+            passiveCount++;
+
+            if (passiveCount > 0)
+            {
+                Logger.Info($"Passive : {passiveCount}");
+            }
+            else
+            {
+                Logger.Info("Passive : 0");
+            }
+
+            Logger.Debug($"PASSIVE : {dbVariation.SourceVariationId}");
+        }
+
+        Logger.Info("");
+        Logger.Info("====================================");
+        Logger.Info("VARIATION SYNCHRONIZATION");
+        Logger.Info($"Amazon Variations : {currentAsins.Count}");
+        Logger.Info($"Database Records  : {dbVariations.Count}");
+        Logger.Info($"Passive           : {passiveCount}");
+        Logger.Info("====================================");
+        Logger.Info("");
+
         var displayOrder = 1;
 
         var insertedCount = 0;
         var updatedCount = 0;
 
-        int insertedImageCount = 0;
+        //int insertedImageCount = 0;
 
         foreach (var size in variation.Sizes)
         {
@@ -572,14 +752,14 @@ public class ProductImportService
                     updatedCount++;
                 }
 
-                if (await ImportVariationImageAsync(
-        connection,
-        transaction,
-        variationEntity.Id,
-        color))
-                {
-                    insertedImageCount++;
-                }
+        //        if (await ImportVariationImageAsync(
+        //connection,
+        //transaction,
+        //variationEntity.Id,
+        //color))
+        //        {
+        //            insertedImageCount++;
+        //        }
 
                 var optionEntities = BuildVariationOptionEntities(
                     variationEntity.Id,
@@ -589,7 +769,8 @@ public class ProductImportService
                 var snapshotEntity = BuildSnapshotEntity(
                     variationEntity.Id,
                     size,
-                    color);
+                    color,
+                    model);
 
                 snapshotEntity.Id =
                     await _snapshotRepository.InsertAsync(
@@ -630,7 +811,7 @@ public class ProductImportService
         Logger.Success($"Product Action      : {productAction}");
         Logger.Success($"Inserted Variations : {insertedCount}");
         Logger.Success($"Updated Variations  : {updatedCount}");
-        Logger.Success($"Inserted Images     : {insertedImageCount}");
+        //Logger.Success($"Inserted Images     : {insertedImageCount}");
         Logger.Success($"Total Variations    : {variationCount}");
         Logger.Success($"Inserted Snapshots  : {variationCount}");
         Logger.Success("====================================");

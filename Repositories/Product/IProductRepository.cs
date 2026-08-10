@@ -1,5 +1,6 @@
 ﻿using System.Data;
 using XTrendApp.Web.Models.Entities;
+using XTrendApp.Web.Models.Product;
 
 namespace XTrendApp.Web.Repositories.Product;
 
@@ -20,4 +21,18 @@ public interface IProductRepository
         IDbConnection connection,
         IDbTransaction transaction,
         ProductEntity product);
+
+    Task<List<ProductEntity>> GetBySourceIdAsync(
+    IDbConnection connection,
+    IDbTransaction transaction,
+    long sourceId);
+
+    Task SetActiveAsync(
+        IDbConnection connection,
+        IDbTransaction transaction,
+        long productId,
+        bool isActive);
+
+    Task<IEnumerable<ProductListViewModel>> GetListAsync();
+
 }
