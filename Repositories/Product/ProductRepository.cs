@@ -254,7 +254,7 @@ SELECT
 FROM ProductAttribute
 WHERE ProductId = @ProductId
 ORDER BY
-    SortOrder,
+    DisplayOrder,
     Id;
 """;
 

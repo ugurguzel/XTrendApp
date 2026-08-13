@@ -1,0 +1,1256 @@
+﻿@using System.Text.Json
+
+@model XTrendApp.Web.Models.Product.ProductDetailViewModel
+
+@{
+    ViewData["Title"] = "Product Detail";
+}
+
+<div class="page-header d-print-none mb-3">
+    <div class="container-xl">
+
+        <div class="row align-items-center">
+
+            <div class="col">
+
+                <div class="mb-2">
+                    <a href="/Product" class="text-secondary text-decoration-none">
+                        <i class="ti ti-arrow-left me-1"></i>
+                        Products
+                    </a>
+                </div>
+
+                <h2 class="page-title">
+                    @Model.Name
+                </h2>
+
+                <div class="text-secondary mt-1">
+
+                    @if (!string.IsNullOrWhiteSpace(Model.Brand))
+                    {
+                        <span>@Model.Brand</span>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(Model.Source))
+                    {
+                        <span class="mx-1">•</span>
+                        <span>@Model.Source</span>
+                    }
+
+                </div>
+
+            </div>
+
+
+            <div class="col-auto">
+
+                @if (!string.IsNullOrWhiteSpace(Model.ProductUrl))
+                {
+                    <a href="@Model.ProductUrl"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       class="btn btn-outline-secondary">
+
+                        <i class="ti ti-external-link me-1"></i>
+
+                        Open Product
+
+                    </a>
+                }
+
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+
+<div class="page-body">
+
+    <div class="container-xl">
+
+
+        <!-- SUMMARY -->
+
+        <div class="row row-cards mb-3">
+
+
+            <!-- RATING -->
+
+            <div class="col-sm-6 col-lg-4">
+
+                <div class="card">
+
+                    <div class="card-body">
+
+                        <div class="subheader">
+                            Rating
+                        </div>
+
+                        <div class="h1 mb-0">
+
+                            @if (Model.Rating.HasValue)
+                            {
+                                <span class="text-yellow">
+                                    ★
+                                </span>
+
+                                @Model.Rating.Value.ToString("0.0")
+                            }
+                            else
+                            {
+                                <span class="text-secondary">
+                                    N/A
+                                </span>
+                            }
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- REVIEWS -->
+
+            <div class="col-sm-6 col-lg-4">
+
+                <div class="card">
+
+                    <div class="card-body">
+
+                        <div class="subheader">
+                            Reviews
+                        </div>
+
+                        <div class="h1 mb-0">
+
+                            @if (Model.ReviewCount.HasValue)
+                            {
+                                @Model.ReviewCount.Value.ToString("N0")
+                            }
+                            else
+                            {
+                                <span class="text-secondary">
+                                    N/A
+                                </span>
+                            }
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- VARIATIONS -->
+
+            <div class="col-sm-6 col-lg-4">
+
+                <div class="card">
+
+                    <div class="card-body">
+
+                        <div class="subheader">
+                            Active Variations
+                        </div>
+
+                        <div class="h1 mb-0">
+                            @Model.VariationCount
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- REVIEW COUNT HISTORY -->
+
+        <div class="card mb-3">
+
+            <div class="card-header">
+
+                <div>
+                    <h3 class="card-title mb-1">
+                        Review Count History
+                    </h3>
+
+                    <div class="text-secondary small">
+                        Product review growth over time
+                    </div>
+                </div>
+
+                @if (Model.ReviewHistory.Any(x => x.ReviewCount.HasValue))
+                {
+                    var latestReview = Model.ReviewHistory
+                    .Where(x => x.ReviewCount.HasValue)
+                    .OrderByDescending(x => x.CapturedAt)
+                    .First();
+
+                    <div class="card-actions">
+
+                        <span class="badge bg-blue-lt">
+                            @latestReview.ReviewCount!.Value.ToString("N0") reviews
+                        </span>
+
+                    </div>
+                }
+
+            </div>
+
+
+            <div class="card-body">
+
+                @if (Model.ReviewHistory.Any(x => x.ReviewCount.HasValue))
+                {
+                    <div class="review-chart-container">
+
+                        <svg id="reviewCountChart"
+                             class="review-chart"
+                             viewBox="0 0 1000 300"
+                             preserveAspectRatio="none">
+                        </svg>
+
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center text-secondary py-5">
+                        No review history available.
+                    </div>
+                }
+
+            </div>
+
+        </div>
+
+        <!-- PRODUCT INFORMATION & ATTRIBUTES -->
+        @{
+            var attributeGroups = Model.Attributes
+            .GroupBy(x => string.IsNullOrWhiteSpace(x.Group)
+            ? "General"
+            : x.Group)
+            .ToDictionary(
+            x => x.Key,
+            x => x.ToList(),
+            StringComparer.OrdinalIgnoreCase);
+        }
+
+        <div class="row row-cards mb-3">
+
+            <!-- PRODUCT INFORMATION -->
+
+            <div class="col-md-6">
+
+                <div class="card h-100">
+
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            Product Information
+                        </h3>
+                    </div>
+
+                    <div class="table-responsive">
+
+                        <table class="table table-vcenter mb-0">
+
+                            <tbody>
+
+                                <tr>
+                                    <td class="attribute-name">
+                                        Brand
+                                    </td>
+
+                                    <td>
+                                        @(Model.Brand ?? "N/A")
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="attribute-name">
+                                        Marketplace
+                                    </td>
+
+                                    <td>
+                                        @(Model.Source ?? "N/A")
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="attribute-name">
+                                        Variations
+                                    </td>
+
+                                    <td>
+                                        @Model.VariationCount
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="attribute-name">
+                                        Last Scan
+                                    </td>
+
+                                    <td>
+                                        @if (Model.LastCapturedAt.HasValue)
+                                        {
+                                            @Model.LastCapturedAt.Value.ToString("dd.MM.yyyy HH:mm")
+                                        }
+                                        else
+                                        {
+                                            <span class="text-secondary">
+                                                N/A
+                                            </span>
+                                        }
+                                    </td>
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- GENERAL -->
+
+            <div class="col-md-6">
+
+                <div class="card h-100">
+
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            General
+                        </h3>
+                    </div>
+
+                    <div class="table-responsive">
+
+                        <table class="table table-vcenter mb-0">
+
+                            <tbody>
+
+                                @if (attributeGroups.TryGetValue("General", out var generalAttributes))
+                                {
+                                    foreach (var item in generalAttributes)
+                                    {
+                                        <tr>
+
+                                            <td class="attribute-name">
+                                                @item.Name
+                                            </td>
+
+                                            <td>
+                                                @(item.Value ?? "-")
+                                            </td>
+
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="2"
+                                            class="text-secondary text-center py-3">
+                                            No information available.
+                                        </td>
+                                    </tr>
+                                }
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- FEATURES & SPECS -->
+
+            <div class="col-md-6">
+
+                <div class="card h-100">
+
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            Features &amp; Specs
+                        </h3>
+                    </div>
+
+                    <div class="table-responsive">
+
+                        <table class="table table-vcenter mb-0">
+
+                            <tbody>
+
+                                @if (attributeGroups.TryGetValue("Features & Specs", out var featureAttributes))
+                                {
+                                    foreach (var item in featureAttributes)
+                                    {
+                                        <tr>
+
+                                            <td class="attribute-name">
+                                                @item.Name
+                                            </td>
+
+                                            <td>
+                                                @(item.Value ?? "-")
+                                            </td>
+
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="2"
+                                            class="text-secondary text-center py-3">
+                                            No information available.
+                                        </td>
+                                    </tr>
+                                }
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ITEM DETAILS -->
+
+            <div class="col-md-6">
+
+                <div class="card h-100">
+
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            Item details
+                        </h3>
+                    </div>
+
+                    <div class="table-responsive">
+
+                        <table class="table table-vcenter mb-0">
+
+                            <tbody>
+
+                                @if (attributeGroups.TryGetValue("Item details", out var itemDetailAttributes))
+                                {
+                                    foreach (var item in itemDetailAttributes)
+                                    {
+                                        <tr>
+
+                                            <td class="attribute-name">
+                                                @item.Name
+                                            </td>
+
+                                            <td>
+                                                @(item.Value ?? "-")
+                                            </td>
+
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="2"
+                                            class="text-secondary text-center py-3">
+                                            No information available.
+                                        </td>
+                                    </tr>
+                                }
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- MATERIALS & CARE -->
+
+            <div class="col-12">
+
+                <div class="card h-100">
+
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            Materials &amp; Care
+                        </h3>
+                    </div>
+
+                    <div class="table-responsive">
+
+                        <table class="table table-vcenter mb-0">
+
+                            <tbody>
+
+                                @if (attributeGroups.TryGetValue("Materials & Care", out var materialAttributes))
+                                {
+                                    foreach (var item in materialAttributes)
+                                    {
+                                        <tr>
+
+                                            <td class="attribute-name">
+                                                @item.Name
+                                            </td>
+
+                                            <td>
+                                                @(item.Value ?? "-")
+                                            </td>
+
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="2"
+                                            class="text-secondary text-center py-3">
+                                            No information available.
+                                        </td>
+                                    </tr>
+                                }
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        @* <!-- REVIEW HISTORY -->
+
+        <div class="card mb-3">
+
+            <div class="card-header">
+
+                <h3 class="card-title">
+                    Review Count History
+                </h3>
+
+            </div>
+
+
+            <div class="table-responsive">
+
+                <table class="table table-vcenter mb-0">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Date
+                            </th>
+
+                            <th class="text-end">
+                                Review Count
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        @if (Model.ReviewHistory.Any())
+                        {
+                            foreach (var history in Model.ReviewHistory)
+                            {
+                                <tr>
+
+                                    <td>
+                                        @history.CapturedAt.ToString("dd.MM.yyyy HH:mm")
+                                    </td>
+
+                                    <td class="text-end fw-medium">
+
+                                        @(history.ReviewCount?.ToString("N0") ?? "-")
+
+                                    </td>
+
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+
+                                <td colspan="2"
+                                    class="text-center text-secondary py-4">
+
+                                    No review history available.
+
+                                </td>
+
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div> *@
+
+    
+
+
+        <!-- VARIATIONS -->
+
+        <div class="card mb-3">
+
+            <div class="card-header">
+
+                <div>
+
+                    <h3 class="card-title mb-1">
+                        Variations
+                    </h3>
+
+                    <div class="text-secondary small">
+                        @Model.VariationCount active variations
+                    </div>
+
+                </div>
+
+
+                <div class="card-actions">
+
+                    <button type="button"
+                            class="btn btn-outline-secondary"
+                            id="toggleVariations">
+
+                        <span id="variationToggleText">
+                            Show Variations
+                        </span>
+
+                        <i class="ti ti-chevron-down ms-1"
+                           id="variationChevron"></i>
+
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <div id="variationsPanel"
+                 class="d-none">
+
+                <div class="border-top">
+
+                    <div class="table-responsive variation-table-container">
+
+                        <table class="table table-vcenter table-hover mb-0">
+
+                            <thead>
+
+                                <tr>
+
+                                    <th>
+                                        Color
+                                    </th>
+
+                                    <th>
+                                        Size
+                                    </th>
+
+                                    <th>
+                                        ASIN
+                                    </th>
+
+                                    <th class="text-end">
+                                        Price
+                                    </th>
+
+                                    <th>
+                                        Status
+                                    </th>
+
+                                    <th class="text-center">
+                                        URL
+                                    </th>
+
+                                </tr>
+
+                            </thead>
+
+
+                            <tbody>
+
+                                @if (Model.Variations.Any())
+                                {
+                                    foreach (var variation in Model.Variations)
+                                    {
+                                        <tr>
+
+                                            <td>
+                                                @(variation.Color ?? "-")
+                                            </td>
+
+
+                                            <td>
+                                                @(variation.Size ?? "-")
+                                            </td>
+
+
+                                            <td>
+
+                                                <span class="text-secondary">
+                                                    @variation.ASIN
+                                                </span>
+
+                                            </td>
+
+
+                                            <td class="text-end">
+
+                                                @if (variation.Price.HasValue)
+                                                {
+                                                    <span class="fw-semibold">
+
+                                                        @variation.Price.Value.ToString("N2")
+
+                                                        @if (!string.IsNullOrWhiteSpace(variation.CurrencyCode))
+                                                        {
+                                                            <span class="text-secondary ms-1">
+                                                                @variation.CurrencyCode
+                                                            </span>
+                                                        }
+
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-secondary">
+                                                        N/A
+                                                    </span>
+                                                }
+
+                                            </td>
+
+
+                                            <td>
+
+                                                @if (variation.IsActive)
+                                                {
+                                                    <span class="badge bg-green-lt">
+                                                        Active
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-secondary-lt">
+                                                        Inactive
+                                                    </span>
+                                                }
+
+                                            </td>
+
+
+                                            <td class="text-center">
+
+                                                @if (!string.IsNullOrWhiteSpace(variation.ProductUrl))
+                                                {
+                                                    <a href="@variation.ProductUrl"
+                                                       target="_blank"
+                                                       rel="noopener noreferrer"
+                                                       class="btn btn-ghost-secondary btn-icon"
+                                                       title="Open variation">
+
+                                                        <i class="ti ti-external-link"></i>
+
+                                                    </a>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-secondary">
+                                                        -
+                                                    </span>
+                                                }
+
+                                            </td>
+
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+
+                                        <td colspan="6"
+                                            class="text-center text-secondary py-4">
+
+                                            No variations available.
+
+                                        </td>
+
+                                    </tr>
+                                }
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+    </div>
+
+</div>
+
+<script type="application/json" id="reviewHistoryData">
+    @Html.Raw(
+        JsonSerializer.Serialize(
+                Model.ReviewHistory
+                        .Where(x => x.ReviewCount.HasValue)
+                        .OrderBy(x => x.CapturedAt)
+                        .Select(x => new
+                        {
+                                Date = x.CapturedAt.ToString("dd.MM.yyyy HH:mm"),
+                                ReviewCount = x.ReviewCount ?? 0
+                        })
+        )
+        )
+</script>
+
+<script>
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const chart = document.getElementById("reviewCountChart");
+        const dataElement = document.getElementById("reviewHistoryData");
+
+        if (!chart || !dataElement) {
+            return;
+        }
+
+
+        const data = JSON.parse(dataElement.textContent.trim());
+
+        if (!data || data.length === 0) {
+            return;
+        }
+
+
+        const width = 1000;
+        const height = 300;
+
+        const paddingLeft = 65;
+        const paddingRight = 25;
+        const paddingTop = 25;
+        const paddingBottom = 55    ;
+
+
+        const chartWidth =
+            width - paddingLeft - paddingRight;
+
+        const chartHeight =
+            height - paddingTop - paddingBottom;
+
+
+        const values = data.map(x => x.ReviewCount);
+
+        let minValue = Math.min(...values);
+        let maxValue = Math.max(...values);
+
+
+        /*
+         * Tek değer varsa grafiğin ölçeğini genişlet.
+         * Böylece tek nokta da görünür.
+         */
+
+        if (minValue === maxValue) {
+
+            const offset = Math.max(
+                10,
+                Math.round(minValue * 0.02)
+            );
+
+            minValue -= offset;
+            maxValue += offset;
+
+        }
+
+
+        const range = maxValue - minValue;
+
+
+        function getX(index) {
+
+            if (data.length === 1) {
+                return paddingLeft + chartWidth / 2;
+            }
+
+            return paddingLeft +
+                (index / (data.length - 1)) * chartWidth;
+
+        }
+
+
+        function getY(value) {
+
+            return paddingTop +
+                chartHeight -
+                ((value - minValue) / range) * chartHeight;
+
+        }
+
+
+        /*
+         * SVG temizle
+         */
+
+        chart.innerHTML = "";
+
+
+        /*
+         * Horizontal grid
+         */
+
+        const gridCount = 4;
+
+        for (let i = 0; i <= gridCount; i++) {
+
+            const y =
+                paddingTop +
+                (i / gridCount) * chartHeight;
+
+            const line =
+                document.createElementNS(
+                    "http://www.w3.org/2000/svg",
+                    "line"
+                );
+
+            line.setAttribute("x1", paddingLeft);
+            line.setAttribute("x2", width - paddingRight);
+            line.setAttribute("y1", y);
+            line.setAttribute("y2", y);
+
+            line.classList.add("review-chart-grid");
+
+            chart.appendChild(line);
+
+
+            /*
+             * Y axis value
+             */
+
+            const value =
+                maxValue -
+                (i / gridCount) * range;
+
+            const text =
+                document.createElementNS(
+                    "http://www.w3.org/2000/svg",
+                    "text"
+                );
+
+            text.setAttribute("x", paddingLeft - 10);
+            text.setAttribute("y", y + 4);
+
+            text.setAttribute("text-anchor", "end");
+
+            text.classList.add("review-chart-label");
+
+            text.textContent =
+                Math.round(value).toLocaleString();
+
+            chart.appendChild(text);
+
+        }
+
+
+        /*
+         * X axis labels
+         */
+
+            data.forEach((item, index) => {
+
+        const text =
+            document.createElementNS(
+                "http://www.w3.org/2000/svg",
+                "text"
+            );
+
+        text.setAttribute("x", getX(index));
+        text.setAttribute("y", height - 28);
+
+        text.setAttribute("text-anchor", "middle");
+
+        text.classList.add("review-chart-label");
+
+
+        const parts = item.Date.split(" ");
+
+
+        const datePart = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "tspan"
+        );
+
+        datePart.setAttribute("x", getX(index));
+        datePart.setAttribute("dy", "0");
+
+        datePart.textContent = parts[0];
+
+
+        const timePart = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "tspan"
+        );
+
+        timePart.setAttribute("x", getX(index));
+        timePart.setAttribute("dy", "18");
+
+        timePart.textContent = parts[1] ?? "";
+
+
+        text.appendChild(datePart);
+        text.appendChild(timePart);
+
+        chart.appendChild(text);
+
+    });
+
+
+        /*
+         * Line
+         */
+
+        if (data.length > 1) {
+
+            const path =
+                document.createElementNS(
+                    "http://www.w3.org/2000/svg",
+                    "path"
+                );
+
+
+            let pathData = "";
+
+            data.forEach((item, index) => {
+
+                const x = getX(index);
+                const y = getY(item.ReviewCount);
+
+                if (index === 0) {
+
+                    pathData += `M ${x} ${y}`;
+
+                }
+                else {
+
+                    pathData += ` L ${x} ${y}`;
+
+                }
+
+            });
+
+
+            path.setAttribute("d", pathData);
+
+            path.classList.add("review-chart-line");
+
+            chart.appendChild(path);
+
+        }
+
+
+        /*
+         * Points
+         */
+
+        data.forEach((item, index) => {
+
+            const circle =
+                document.createElementNS(
+                    "http://www.w3.org/2000/svg",
+                    "circle"
+                );
+
+
+            circle.setAttribute("cx", getX(index));
+            circle.setAttribute("cy", getY(item.ReviewCount));
+            circle.setAttribute("r", "5");
+
+            circle.classList.add("review-chart-point");
+
+
+            /*
+             * Tooltip
+             */
+
+            const title =
+                document.createElementNS(
+                    "http://www.w3.org/2000/svg",
+                    "title"
+                );
+
+            title.textContent =
+                `${item.Date} — ${item.ReviewCount.toLocaleString()} reviews`;
+
+            circle.appendChild(title);
+
+
+            chart.appendChild(circle);
+
+        });
+
+    });
+
+</script>
+
+<script>
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const button = document.getElementById("toggleVariations");
+        const panel = document.getElementById("variationsPanel");
+        const text = document.getElementById("variationToggleText");
+        const chevron = document.getElementById("variationChevron");
+
+        if (!button || !panel || !text || !chevron) {
+            return;
+        }
+
+
+        button.addEventListener("click", function () {
+
+            const isHidden =
+                panel.classList.contains("d-none");
+
+
+            if (isHidden) {
+
+                panel.classList.remove("d-none");
+
+                text.textContent = "Hide Variations";
+
+                chevron.classList.remove("ti-chevron-down");
+                chevron.classList.add("ti-chevron-up");
+
+            }
+            else {
+
+                panel.classList.add("d-none");
+
+                text.textContent = "Show Variations";
+
+                chevron.classList.remove("ti-chevron-up");
+                chevron.classList.add("ti-chevron-down");
+
+            }
+
+        });
+
+    });
+
+</script>
+
+<style>
+
+    .attribute-group + .attribute-group {
+        border-top: 1px solid var(--tblr-border-color);
+    }
+
+    .attribute-group-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.75rem 1rem;
+        background: var(--tblr-bg-surface-secondary);
+        border-bottom: 1px solid var(--tblr-border-color);
+    }
+
+    .attribute-name {
+        width: 35%;
+        font-weight: 500;
+    }
+
+    .variation-table-container {
+        max-height: 650px;
+        overflow-y: auto;
+    }
+
+
+    /* REVIEW COUNT CHART */
+
+    .review-chart-container {
+        width: 100%;
+        height: 320px;
+    }
+
+    .review-chart {
+        width: 100%;
+        height: 100%;
+        display: block;
+    }
+
+    .review-chart-grid {
+        stroke: var(--tblr-border-color);
+        stroke-width: 1;
+    }
+
+    .review-chart-label {
+        fill: var(--tblr-secondary);
+        font-size: 12px;
+    }
+
+    .review-chart-line {
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 3;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .review-chart-point {
+        fill: currentColor;
+        stroke: var(--tblr-bg-surface);
+        stroke-width: 2;
+        cursor: pointer;
+    }
+
+</style>
