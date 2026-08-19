@@ -1,12 +1,13 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Options;
 using Microsoft.Playwright;
+using XTrendApp.Web.Common;
 using XTrendApp.Web.Engines.Amazon;
 using XTrendApp.Web.Models.Amazon;
+using XTrendApp.Web.Models.ScanJob;
 using XTrendApp.Web.Parsers.Amazon;
 using XTrendApp.Web.Selectors.Amazon;
 using XTrendApp.Web.Services.Product;
-using XTrendApp.Web.Common;
 
 namespace XTrendApp.Web.Connectors.Amazon
 {
@@ -35,7 +36,9 @@ namespace XTrendApp.Web.Connectors.Amazon
             _productImportService = productImportService;
         }
 
-        public async Task RunAsync(AmazonMarket market)
+        public async Task<ScanExecutionResult> RunAsync(
+    AmazonMarket market,
+    long scanExecutionId)
         {
             string baseUrl;
             string sessionFile;
@@ -128,11 +131,13 @@ namespace XTrendApp.Web.Connectors.Amazon
             }
 
             Logger.Info($"Products Found : {products.Count}");
-            
+
 
             //--------------------------------------------------
             // DETAIL PARSER
             //--------------------------------------------------
+
+            var scanResult = new ScanExecutionResult();
 
             foreach (var product in products)
             {
@@ -181,12 +186,33 @@ namespace XTrendApp.Web.Connectors.Amazon
                     _ => throw new InvalidOperationException("Unknown market.")
                 };
 
-                await _productImportService.ImportAsync(
-                    detail,
-                    variation,
-                    sourceName,
-                    countryCode,
-                    null);
+                
+
+                var importResult = await _productImportService.ImportAsync(
+    detail,
+    variation,
+    sourceName,
+    countryCode,
+    scanExecutionId);
+
+
+                scanResult.TotalProducts++;
+
+                scanResult.InsertedProducts +=
+                    importResult.InsertedProducts;
+
+                scanResult.UpdatedProducts +=
+                    importResult.UpdatedProducts;
+
+                scanResult.InsertedVariations +=
+                    importResult.InsertedVariations;
+
+                scanResult.UpdatedVariations +=
+                    importResult.UpdatedVariations;
+
+                scanResult.SnapshotCount +=
+                    importResult.SnapshotCount;
+
 
             }
 
@@ -198,6 +224,9 @@ namespace XTrendApp.Web.Connectors.Amazon
             Logger.Success("══════════════════════════════════════════════════════════════════════════════");
             Logger.Success($"Products Processed : {products.Count}");
             Logger.Success("");
+
+
+            return scanResult;
         }
     }
 }

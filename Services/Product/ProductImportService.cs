@@ -1,20 +1,21 @@
 ﻿using System.Data;
 using System.Drawing;
+using XTrendApp.Web.Common;
 using XTrendApp.Web.Data;
 using XTrendApp.Web.Models.Amazon;
 using XTrendApp.Web.Models.Entities;
-using XTrendApp.Web.Repositories.ProductAttribute;
+using XTrendApp.Web.Models.ScanJob;
 using XTrendApp.Web.Repositories.Brand;
 using XTrendApp.Web.Repositories.Category;
 using XTrendApp.Web.Repositories.Collection;
 using XTrendApp.Web.Repositories.Product;
+using XTrendApp.Web.Repositories.ProductAttribute;
 using XTrendApp.Web.Repositories.ProductDocument;
 using XTrendApp.Web.Repositories.ProductImage;
 using XTrendApp.Web.Repositories.ProductVariation;
 using XTrendApp.Web.Repositories.ProductVariationOption;
 using XTrendApp.Web.Repositories.Snapshot;
 using XTrendApp.Web.Repositories.Source;
-using XTrendApp.Web.Common;
 
 namespace XTrendApp.Web.Services.Product;
 
@@ -68,20 +69,23 @@ public class ProductImportService
         _productImageRepository = productImageRepository;
     }
 
-    public async Task ImportAsync(
+    public async Task<ScanExecutionResult> ImportAsync(
     AmazonDetailModel model,
     AmazonVariationResult variation,
     string sourceName,
     string countryCode,
     long? scanExecutionId)
     {
+
+        var result = new ScanExecutionResult();
+
         using var connection = _context.CreateConnection();
 
         connection.Open();
 
         using var transaction = connection.BeginTransaction();
 
-        
+
 
         try
         {
@@ -121,7 +125,7 @@ public class ProductImportService
                 sourceId,
                 model.Asin);
 
-                       
+
 
             if (existingProduct == null)
             {
@@ -131,6 +135,8 @@ public class ProductImportService
                     product);
 
                 productAction = "INSERT";
+
+                result.InsertedProducts++;
 
                 Logger.Info("INSERT PRODUCT...");
             }
@@ -145,6 +151,8 @@ public class ProductImportService
 
                 productAction = "UPDATE";
 
+                result.UpdatedProducts++;
+
                 Logger.Info("UPDATE PRODUCT...");
             }
 
@@ -154,7 +162,16 @@ public class ProductImportService
             product.Id,
             model);
 
-            await ImportVariationsAsync(
+            //        await ImportVariationsAsync(
+            //connection,
+            //transaction,
+            //product.Id,
+            //model,
+            //variation,
+            //productAction,
+            //scanExecutionId);
+
+            var variationResult = await ImportVariationsAsync(
     connection,
     transaction,
     product.Id,
@@ -163,7 +180,18 @@ public class ProductImportService
     productAction,
     scanExecutionId);
 
+            result.InsertedVariations =
+                variationResult.InsertedVariations;
+
+            result.UpdatedVariations =
+                variationResult.UpdatedVariations;
+
+            result.SnapshotCount =
+                variationResult.SnapshotCount;
+
             transaction.Commit();
+
+            return result;
         }
         catch (Exception)
         {
@@ -263,7 +291,7 @@ public class ProductImportService
 
     }
 
-    
+
 
     private ProductVariationEntity BuildVariationEntity(
     long productId,
@@ -306,7 +334,7 @@ public class ProductImportService
 
             ProductUrl = BuildVariationUrl(
         model.ProductUrl,
-        color.Asin), 
+        color.Asin),
 
             DisplayOrder = displayOrder,
 
@@ -534,7 +562,7 @@ public class ProductImportService
         }
     }
 
-    
+
 
     private static readonly HashSet<string> IgnoredAttributes =
 [
@@ -586,7 +614,7 @@ public class ProductImportService
             });
     }
 
-    private async Task ImportVariationsAsync(
+    private async Task<(int InsertedVariations, int UpdatedVariations, int SnapshotCount)> ImportVariationsAsync(
     IDbConnection connection,
     IDbTransaction transaction,
     long productId,
@@ -758,14 +786,14 @@ public class ProductImportService
                     updatedCount++;
                 }
 
-        //        if (await ImportVariationImageAsync(
-        //connection,
-        //transaction,
-        //variationEntity.Id,
-        //color))
-        //        {
-        //            insertedImageCount++;
-        //        }
+                //        if (await ImportVariationImageAsync(
+                //connection,
+                //transaction,
+                //variationEntity.Id,
+                //color))
+                //        {
+                //            insertedImageCount++;
+                //        }
 
                 var optionEntities = BuildVariationOptionEntities(
                     variationEntity.Id,
@@ -804,13 +832,15 @@ public class ProductImportService
                     }
                 }
 
-                
+
             }
 
-            
+
         }
 
         var variationCount = variation.Sizes.Sum(x => x.Colors.Count);
+
+        
 
         Logger.Success("");
         Logger.Success("====================================");
@@ -824,8 +854,10 @@ public class ProductImportService
         Logger.Success("====================================");
         Logger.Success("");
 
-        await Task.CompletedTask;
-    }
+        return (
+    insertedCount,
+    updatedCount,
+    variationCount);
 
-    
+    }
 }

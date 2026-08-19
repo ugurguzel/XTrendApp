@@ -8,15 +8,16 @@ using XTrendApp.Web.Connectors.Wayfair;
 using XTrendApp.Web.Data;
 using XTrendApp.Web.Engines.Amazon;
 using XTrendApp.Web.Parsers.Amazon;
-using XTrendApp.Web.Repositories.ProductAttribute;
 using XTrendApp.Web.Repositories.Brand;
 using XTrendApp.Web.Repositories.Category;
 using XTrendApp.Web.Repositories.Collection;
 using XTrendApp.Web.Repositories.Product;
+using XTrendApp.Web.Repositories.ProductAttribute;
 using XTrendApp.Web.Repositories.ProductDocument;
 using XTrendApp.Web.Repositories.ProductImage;
 using XTrendApp.Web.Repositories.ProductVariation;
 using XTrendApp.Web.Repositories.ProductVariationOption;
+using XTrendApp.Web.Repositories.ScanExecution;
 using XTrendApp.Web.Repositories.ScanJob;
 using XTrendApp.Web.Repositories.Snapshot;
 using XTrendApp.Web.Repositories.Source;
@@ -104,6 +105,8 @@ builder.Services.AddScoped<IProductDocumentRepository, ProductDocumentRepository
 builder.Services.AddScoped<ProductImportService>();
 
 builder.Services.AddScoped<ProductService>();
+
+builder.Services.AddScoped<IScanExecutionRepository, ScanExecutionRepository>();
 
 builder.Services.AddAuthentication(
         CookieAuthenticationDefaults.AuthenticationScheme)

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using XTrendApp.Web.Connectors.Amazon;
 using XTrendApp.Web.Connectors.Wayfair;
+using XTrendApp.Web.Services.ScanJob;
 
 namespace XTrendApp.Web.Controllers.Administration
 {
@@ -9,16 +10,16 @@ namespace XTrendApp.Web.Controllers.Administration
     public class ConnectorController : Controller
     {
         private readonly AmazonSession _amazonSession;
-        private readonly AmazonConnector _amazonConnector;
+        private readonly ScanJobService _scanJobService;
         private readonly WayfairSession _wayfairSession;
 
         public ConnectorController(
     AmazonSession amazonSession,
-    AmazonConnector amazonConnector,
+    ScanJobService scanJobService,
     WayfairSession wayfairSession)
         {
             _amazonSession = amazonSession;
-            _amazonConnector = amazonConnector;
+            _scanJobService = scanJobService;
             _wayfairSession = wayfairSession;
         }
 
@@ -29,7 +30,7 @@ namespace XTrendApp.Web.Controllers.Administration
 
         public async Task<IActionResult> TestAmazonUs()
         {
-            await _amazonConnector.RunAsync(AmazonMarket.US);
+            await _scanJobService.RunAsync("AMAZON_US");
 
             return Content("Amazon US OK");
         }
@@ -63,7 +64,7 @@ namespace XTrendApp.Web.Controllers.Administration
 
         public async Task<IActionResult> TestAmazonUk()
         {
-            await _amazonConnector.RunAsync(AmazonMarket.UK);
+            await _scanJobService.RunAsync("AMAZON_UK");
 
             return Content("Amazon UK OK");
         }
