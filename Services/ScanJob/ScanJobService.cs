@@ -91,9 +91,11 @@ namespace XTrendApp.Web.Services.ScanJob
             }
 
 
+            ScanExecutionResult scanResult;
+
             try
             {
-                await _amazonConnector.RunAsync(
+                scanResult = await _amazonConnector.RunAsync(
                     market.Value,
                     executionId);
             }
@@ -134,13 +136,13 @@ namespace XTrendApp.Web.Services.ScanJob
             try
             {
                 await _scanExecutionRepository.CompleteAsync(
-                    completeConnection,
-                    completeTransaction,
-                    executionId,
-                    0,
-                    0,
-                    0,
-                    0);
+    completeConnection,
+    completeTransaction,
+    executionId,
+    scanResult.TotalProducts,
+    scanResult.InsertedProducts,
+    scanResult.UpdatedProducts,
+    scanResult.FailedProducts);
 
                 completeTransaction.Commit();
             }
