@@ -72,7 +72,8 @@ public class ProductImportService
     AmazonDetailModel model,
     AmazonVariationResult variation,
     string sourceName,
-    string countryCode)
+    string countryCode,
+    long? scanExecutionId)
     {
         using var connection = _context.CreateConnection();
 
@@ -159,7 +160,8 @@ public class ProductImportService
     product.Id,
     model,
     variation,
-    productAction);
+    productAction,
+    scanExecutionId);
 
             transaction.Commit();
         }
@@ -382,11 +384,14 @@ public class ProductImportService
     long variationId,
     AmazonVariationSize size,
     AmazonVariationColor color,
-    AmazonDetailModel model)
+    AmazonDetailModel model,
+    long? scanExecutionId)
     {
         return new ProductSnapshotEntity
         {
             ProductVariationId = variationId,
+
+            ScanExecutionId = scanExecutionId,
 
             Price = color.CurrentPrice,
 
@@ -587,7 +592,8 @@ public class ProductImportService
     long productId,
     AmazonDetailModel model,
     AmazonVariationResult variation,
-    string productAction)
+    string productAction,
+    long? scanExecutionId)
     {
         if (variation.Sizes.Count == 0)
         {
@@ -770,7 +776,8 @@ public class ProductImportService
                     variationEntity.Id,
                     size,
                     color,
-                    model);
+                    model,
+                    scanExecutionId);
 
                 snapshotEntity.Id =
                     await _snapshotRepository.InsertAsync(

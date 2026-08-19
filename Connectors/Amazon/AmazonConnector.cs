@@ -185,7 +185,8 @@ namespace XTrendApp.Web.Connectors.Amazon
                     detail,
                     variation,
                     sourceName,
-                    countryCode);
+                    countryCode,
+                    null);
 
             }
 
