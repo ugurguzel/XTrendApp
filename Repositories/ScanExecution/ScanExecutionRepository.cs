@@ -1,36 +1,31 @@
 ﻿using System.Data;
 using Dapper;
-using XTrendApp.Web.Models.ScanJob;
+using XTrendApp.Web.Models.Entities;
 
-namespace XTrendApp.Web.Repositories.ScanJob;
+namespace XTrendApp.Web.Repositories.ScanExecution;
 
-public class ScanJobExecutionRepository : IScanJobExecutionRepository
+public class ScanExecutionRepository : IScanExecutionRepository
 {
     public async Task<long> StartAsync(
         IDbConnection connection,
         IDbTransaction transaction,
-        string jobType,
-        long? sourceId,
-        string? keyword)
+        long scanJobId,
+        string jobType)
     {
         const string sql = """
-            INSERT INTO ScanJob
+            INSERT INTO ScanExecution
             (
+                ScanJobId,
                 JobType,
-                SourceId,
-                Keyword,
                 Status,
-                StartedAt,
-                CreatedAt
+                StartedAt
             )
             OUTPUT INSERTED.Id
             VALUES
             (
+                @ScanJobId,
                 @JobType,
-                @SourceId,
-                @Keyword,
                 'RUNNING',
-                SYSUTCDATETIME(),
                 SYSUTCDATETIME()
             );
             """;
@@ -39,9 +34,8 @@ public class ScanJobExecutionRepository : IScanJobExecutionRepository
             sql,
             new
             {
-                JobType = jobType,
-                SourceId = sourceId,
-                Keyword = keyword
+                ScanJobId = scanJobId,
+                JobType = jobType
             },
             transaction);
     }
@@ -57,7 +51,7 @@ public class ScanJobExecutionRepository : IScanJobExecutionRepository
         int failedProducts)
     {
         const string sql = """
-            UPDATE ScanJob
+            UPDATE ScanExecution
             SET
                 Status = 'COMPLETED',
                 FinishedAt = SYSUTCDATETIME(),
@@ -85,11 +79,10 @@ public class ScanJobExecutionRepository : IScanJobExecutionRepository
     public async Task FailAsync(
         IDbConnection connection,
         IDbTransaction transaction,
-        long executionId,
-        string? errorMessage)
+        long executionId)
     {
         const string sql = """
-            UPDATE ScanJob
+            UPDATE ScanExecution
             SET
                 Status = 'FAILED',
                 FinishedAt = SYSUTCDATETIME()
@@ -106,16 +99,15 @@ public class ScanJobExecutionRepository : IScanJobExecutionRepository
     }
 
 
-    public async Task<ScanJobExecutionEntity?> GetByIdAsync(
+    public async Task<ScanExecutionEntity?> GetByIdAsync(
         IDbConnection connection,
         long executionId)
     {
         const string sql = """
             SELECT
                 Id,
+                ScanJobId,
                 JobType,
-                SourceId,
-                Keyword,
                 Status,
                 StartedAt,
                 FinishedAt,
@@ -124,11 +116,11 @@ public class ScanJobExecutionRepository : IScanJobExecutionRepository
                 UpdatedProducts,
                 FailedProducts,
                 CreatedAt
-            FROM ScanJob
+            FROM ScanExecution
             WHERE Id = @Id;
             """;
 
-        return await connection.QueryFirstOrDefaultAsync<ScanJobExecutionEntity>(
+        return await connection.QueryFirstOrDefaultAsync<ScanExecutionEntity>(
             sql,
             new
             {

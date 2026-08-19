@@ -1,16 +1,15 @@
 ﻿using System.Data;
-using XTrendApp.Web.Models.ScanJob;
+using XTrendApp.Web.Models.Entities;
 
-namespace XTrendApp.Web.Repositories.ScanJob;
+namespace XTrendApp.Web.Repositories.ScanExecution;
 
-public interface IScanJobExecutionRepository
+public interface IScanExecutionRepository
 {
     Task<long> StartAsync(
         IDbConnection connection,
         IDbTransaction transaction,
-        string jobType,
-        long? sourceId,
-        string? keyword);
+        long scanJobId,
+        string jobType);
 
     Task CompleteAsync(
         IDbConnection connection,
@@ -24,10 +23,9 @@ public interface IScanJobExecutionRepository
     Task FailAsync(
         IDbConnection connection,
         IDbTransaction transaction,
-        long executionId,
-        string? errorMessage);
+        long executionId);
 
-    Task<ScanJobExecutionEntity?> GetByIdAsync(
+    Task<ScanExecutionEntity?> GetByIdAsync(
         IDbConnection connection,
         long executionId);
 }

@@ -1,14 +1,10 @@
-﻿namespace XTrendApp.Web.Models.ScanJob;
+﻿namespace XTrendApp.Web.Models.Entities;
 
-public class ScanJobExecutionEntity
+public class ScanExecutionEntity : BaseEntity
 {
-    public long Id { get; set; }
+    public long ScanJobId { get; set; }
 
     public string JobType { get; set; } = string.Empty;
-
-    public long? SourceId { get; set; }
-
-    public string? Keyword { get; set; }
 
     public string Status { get; set; } = string.Empty;
 
@@ -23,6 +19,4 @@ public class ScanJobExecutionEntity
     public int UpdatedProducts { get; set; }
 
     public int FailedProducts { get; set; }
-
-    public DateTime CreatedAt { get; set; }
 }

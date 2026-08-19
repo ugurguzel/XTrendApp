@@ -38,5 +38,5 @@ public class ProductSnapshotEntity : BaseEntity
 
     public DateTime CapturedAt { get; set; }
 
-    public long? ScanJobId { get; set; }
+    public long? ScanExecutionId { get; set; }
 }
