@@ -325,7 +325,7 @@ ORDER BY
 
     private const string GetReviewHistorySql = """
 SELECT
-    MAX(ps.CapturedAt) AS CapturedAt,
+    se.StartedAt AS CapturedAt,
     MAX(ps.ReviewCount) AS ReviewCount
 
 FROM ProductVariation pv
@@ -333,14 +333,19 @@ FROM ProductVariation pv
 INNER JOIN ProductSnapshot ps
     ON ps.ProductVariationId = pv.Id
 
+INNER JOIN ScanExecution se
+    ON se.Id = ps.ScanExecutionId
+
 WHERE pv.ProductId = @ProductId
   AND ps.ReviewCount IS NOT NULL
+  AND ps.ScanExecutionId IS NOT NULL
 
 GROUP BY
-    CONVERT(datetime2(0), ps.CapturedAt)
+    se.Id,
+    se.StartedAt
 
 ORDER BY
-    MAX(ps.CapturedAt);
+    se.StartedAt;
 """;
     #endregion
 
