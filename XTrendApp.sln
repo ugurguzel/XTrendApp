@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XTrendApp.Web", "XTrendApp.Web.csproj", "{7D8B5089-7364-4AB9-A6C5-0D77159DE238}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XTrendApp.Core", "XTrendApp.Core\XTrendApp.Core.csproj", "{A96A464C-7B78-4268-BCF6-2D7D87640A04}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XTrendApp.Web", "XTrendApp.Web\XTrendApp.Web.csproj", "{ACBBFB45-B082-98B3-C081-A3C278580EDD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,14 +13,14 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{7D8B5089-7364-4AB9-A6C5-0D77159DE238}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7D8B5089-7364-4AB9-A6C5-0D77159DE238}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7D8B5089-7364-4AB9-A6C5-0D77159DE238}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7D8B5089-7364-4AB9-A6C5-0D77159DE238}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A96A464C-7B78-4268-BCF6-2D7D87640A04}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A96A464C-7B78-4268-BCF6-2D7D87640A04}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A96A464C-7B78-4268-BCF6-2D7D87640A04}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A96A464C-7B78-4268-BCF6-2D7D87640A04}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ACBBFB45-B082-98B3-C081-A3C278580EDD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ACBBFB45-B082-98B3-C081-A3C278580EDD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ACBBFB45-B082-98B3-C081-A3C278580EDD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ACBBFB45-B082-98B3-C081-A3C278580EDD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
