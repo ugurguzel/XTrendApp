@@ -67,7 +67,7 @@ namespace XTrendApp.Web.Connectors.Amazon
             Logger.Info($" AMAZON {market}");
             Logger.Info("══════════════════════════════════════════════════════════════════════════════");
             Logger.Info("");
-            
+
             using var playwright = await Playwright.CreateAsync();
 
             await using var browser = await playwright.Chromium.LaunchAsync(
@@ -127,7 +127,7 @@ namespace XTrendApp.Web.Connectors.Amazon
                 Logger.Info($"ASIN : {product.Asin}");
                 Logger.Info("");
 
-                
+
             }
 
             Logger.Info($"Products Found : {products.Count}");
@@ -186,7 +186,7 @@ namespace XTrendApp.Web.Connectors.Amazon
                     _ => throw new InvalidOperationException("Unknown market.")
                 };
 
-                
+
 
                 var importResult = await _productImportService.ImportAsync(
     detail,
