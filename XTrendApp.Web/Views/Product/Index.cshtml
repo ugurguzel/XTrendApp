@@ -2,6 +2,9 @@
 
 @{
     ViewData["Title"] = "Products";
+
+    var sortBy = ViewBag.SortBy as string ?? "LastScan";
+    var sortDirection = ViewBag.SortDirection as string ?? "desc";
 }
 
 <div class="page-header d-print-none mb-3">
@@ -50,33 +53,182 @@
 
                             <th style="width: 72px;"></th>
 
-                            <th>
-                                Product
-                            </th>
+
+                            <!-- PRODUCT -->
 
                             <th>
-                                Brand
+                                <a href="@Url.Action("Index", new
+                                   {
+                                       sortBy = "Product",
+                                       sortDirection = sortBy.Equals("Product", StringComparison.OrdinalIgnoreCase)
+                                                                           && sortDirection.Equals("asc", StringComparison.OrdinalIgnoreCase)
+                                                                               ? "desc"
+                                                                               : "asc"
+                                   })"
+                                   class="table-sort-link">
+
+                                    Product
+
+                                    @if (sortBy.Equals("Product", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        <i class="ti ti-chevron-@(sortDirection.Equals("asc", StringComparison.OrdinalIgnoreCase) ? "up" : "down")"></i>
+                                    }
+
+                                </a>
                             </th>
 
+
+                            <!-- BRAND -->
+
                             <th>
-                                Marketplace
+                                <a href="@Url.Action("Index", new
+                                   {
+                                       sortBy = "Brand",
+                                       sortDirection = sortBy.Equals("Brand", StringComparison.OrdinalIgnoreCase)
+                                                                           && sortDirection.Equals("asc", StringComparison.OrdinalIgnoreCase)
+                                                                               ? "desc"
+                                                                               : "asc"
+                                   })"
+                                   class="table-sort-link">
+
+                                    Brand
+
+                                    @if (sortBy.Equals("Brand", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        <i class="ti ti-chevron-@(sortDirection.Equals("asc", StringComparison.OrdinalIgnoreCase) ? "up" : "down")"></i>
+                                    }
+
+                                </a>
                             </th>
+
+
+                            <!-- MARKETPLACE -->
+
+                            <th>
+                                <a href="@Url.Action("Index", new
+                                   {
+                                       sortBy = "Marketplace",
+                                       sortDirection = sortBy.Equals("Marketplace", StringComparison.OrdinalIgnoreCase)
+                                                                           && sortDirection.Equals("asc", StringComparison.OrdinalIgnoreCase)
+                                                                               ? "desc"
+                                                                               : "asc"
+                                   })"
+                                   class="table-sort-link">
+
+                                    Marketplace
+
+                                    @if (sortBy.Equals("Marketplace", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        <i class="ti ti-chevron-@(sortDirection.Equals("asc", StringComparison.OrdinalIgnoreCase) ? "up" : "down")"></i>
+                                    }
+
+                                </a>
+                            </th>
+
+
+                            <!-- VARIATIONS -->
 
                             <th class="text-center">
-                                Variations
+
+                                <a href="@Url.Action("Index", new
+                                   {
+                                       sortBy = "Variations",
+                                       sortDirection = sortBy.Equals("Variations", StringComparison.OrdinalIgnoreCase)
+                                                                           && sortDirection.Equals("asc", StringComparison.OrdinalIgnoreCase)
+                                                                               ? "desc"
+                                                                               : "asc"
+                                   })"
+                                   class="table-sort-link justify-content-center">
+
+                                    Variations
+
+                                    @if (sortBy.Equals("Variations", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        <i class="ti ti-chevron-@(sortDirection.Equals("asc", StringComparison.OrdinalIgnoreCase) ? "up" : "down")"></i>
+                                    }
+
+                                </a>
+
                             </th>
 
+
+                            <!-- RATING -->
+
                             <th class="text-center">
-                                Rating
+
+                                <a href="@Url.Action("Index", new
+                                   {
+                                       sortBy = "Rating",
+                                       sortDirection = sortBy.Equals("Rating", StringComparison.OrdinalIgnoreCase)
+                                                                           && sortDirection.Equals("asc", StringComparison.OrdinalIgnoreCase)
+                                                                               ? "desc"
+                                                                               : "asc"
+                                   })"
+                                   class="table-sort-link justify-content-center">
+
+                                    Rating
+
+                                    @if (sortBy.Equals("Rating", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        <i class="ti ti-chevron-@(sortDirection.Equals("asc", StringComparison.OrdinalIgnoreCase) ? "up" : "down")"></i>
+                                    }
+
+                                </a>
+
                             </th>
+
+
+                            <!-- REVIEWS -->
 
                             <th class="text-end">
-                                Reviews
+
+                                <a href="@Url.Action("Index", new
+                                   {
+                                       sortBy = "Reviews",
+                                       sortDirection = sortBy.Equals("Reviews", StringComparison.OrdinalIgnoreCase)
+                                                                           && sortDirection.Equals("asc", StringComparison.OrdinalIgnoreCase)
+                                                                               ? "desc"
+                                                                               : "asc"
+                                   })"
+                                   class="table-sort-link justify-content-end">
+
+                                    Reviews
+
+                                    @if (sortBy.Equals("Reviews", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        <i class="ti ti-chevron-@(sortDirection.Equals("asc", StringComparison.OrdinalIgnoreCase) ? "up" : "down")"></i>
+                                    }
+
+                                </a>
+
                             </th>
 
+
+                            <!-- LAST SCAN -->
+
                             <th>
-                                Last Scan
+
+                                <a href="@Url.Action("Index", new
+                                   {
+                                       sortBy = "LastScan",
+                                       sortDirection = sortBy.Equals("LastScan", StringComparison.OrdinalIgnoreCase)
+                                                                           && sortDirection.Equals("asc", StringComparison.OrdinalIgnoreCase)
+                                                                               ? "desc"
+                                                                               : "asc"
+                                   })"
+                                   class="table-sort-link">
+
+                                    Last Scan
+
+                                    @if (sortBy.Equals("LastScan", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        <i class="ti ti-chevron-@(sortDirection.Equals("asc", StringComparison.OrdinalIgnoreCase) ? "up" : "down")"></i>
+                                    }
+
+                                </a>
+
                             </th>
+
 
                             <th style="width: 50px;"></th>
 
@@ -91,6 +243,7 @@
                             <tr>
 
                                 <!-- IMAGE -->
+
                                 <td>
 
                                     @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
@@ -110,6 +263,7 @@
 
 
                                 <!-- PRODUCT -->
+
                                 <td>
 
                                     <div class="d-flex flex-column">
@@ -135,6 +289,7 @@
 
 
                                 <!-- BRAND -->
+
                                 <td>
 
                                     @if (!string.IsNullOrWhiteSpace(item.Brand))
@@ -153,7 +308,8 @@
                                 </td>
 
 
-                                <!-- SOURCE -->
+                                <!-- MARKETPLACE -->
+
                                 <td>
 
                                     @if (!string.IsNullOrWhiteSpace(item.Source))
@@ -181,6 +337,7 @@
 
 
                                 <!-- VARIATIONS -->
+
                                 <td class="text-center">
 
                                     <span class="badge bg-yellow-lt">
@@ -191,6 +348,7 @@
 
 
                                 <!-- RATING -->
+
                                 <td class="text-center">
 
                                     @if (item.Rating.HasValue)
@@ -218,6 +376,7 @@
 
 
                                 <!-- REVIEWS -->
+
                                 <td class="text-end">
 
                                     @if (item.ReviewCount.HasValue)
@@ -237,6 +396,7 @@
 
 
                                 <!-- LAST SCAN -->
+
                                 <td>
 
                                     @if (item.LastCapturedAt.HasValue)
@@ -264,6 +424,7 @@
 
 
                                 <!-- ACTION -->
+
                                 <td>
 
                                     <a href="/Product/Detail/@item.Id"
@@ -305,5 +466,21 @@
     .table td {
         vertical-align: middle;
     }
+
+    .table-sort-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        color: inherit;
+        text-decoration: none;
+    }
+
+        .table-sort-link:hover {
+            color: var(--tblr-primary);
+        }
+
+        .table-sort-link i {
+            font-size: 0.9rem;
+        }
 
 </style>

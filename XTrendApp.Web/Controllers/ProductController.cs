@@ -13,12 +13,20 @@ public class ProductController : Controller
     }
 
 
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(
+        string sortBy = "LastScan",
+        string sortDirection = "desc")
     {
-        var products = await _productService.GetAllAsync();
+        var products = await _productService.GetAllAsync(
+            sortBy,
+            sortDirection);
+
+        ViewBag.SortBy = sortBy;
+        ViewBag.SortDirection = sortDirection;
 
         return View(products);
     }
+
 
     public async Task<IActionResult> Detail(long id)
     {

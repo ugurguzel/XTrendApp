@@ -187,6 +187,7 @@ OUTER APPLY
 
 
 ORDER BY
+    snap.CapturedAt DESC,
     p.Id DESC;
 """;
 
