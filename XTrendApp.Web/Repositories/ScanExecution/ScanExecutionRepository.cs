@@ -7,35 +7,39 @@ namespace XTrendApp.Web.Repositories.ScanExecution;
 public class ScanExecutionRepository : IScanExecutionRepository
 {
     public async Task<long> StartAsync(
-        IDbConnection connection,
-        IDbTransaction transaction,
-        long scanJobId,
-        string jobType)
+    IDbConnection connection,
+    IDbTransaction transaction,
+    long scanJobId,
+    string jobType,
+    int productLimit)
     {
         const string sql = """
-            INSERT INTO ScanExecution
-            (
-                ScanJobId,
-                JobType,
-                Status,
-                StartedAt
-            )
-            OUTPUT INSERTED.Id
-            VALUES
-            (
-                @ScanJobId,
-                @JobType,
-                'RUNNING',
-                SYSUTCDATETIME()
-            );
-            """;
+        INSERT INTO ScanExecution
+        (
+            ScanJobId,
+            JobType,
+            ProductLimit,
+            Status,
+            StartedAt
+        )
+        OUTPUT INSERTED.Id
+        VALUES
+        (
+            @ScanJobId,
+            @JobType,
+            @ProductLimit,
+            'RUNNING',
+            SYSUTCDATETIME()
+        );
+        """;
 
         return await connection.ExecuteScalarAsync<long>(
             sql,
             new
             {
                 ScanJobId = scanJobId,
-                JobType = jobType
+                JobType = jobType,
+                ProductLimit = productLimit
             },
             transaction);
     }
@@ -108,6 +112,7 @@ public class ScanExecutionRepository : IScanExecutionRepository
                 Id,
                 ScanJobId,
                 JobType,
+                ProductLimit,
                 Status,
                 StartedAt,
                 FinishedAt,

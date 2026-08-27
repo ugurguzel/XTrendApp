@@ -6,10 +6,11 @@ namespace XTrendApp.Web.Repositories.ScanExecution;
 public interface IScanExecutionRepository
 {
     Task<long> StartAsync(
-        IDbConnection connection,
-        IDbTransaction transaction,
-        long scanJobId,
-        string jobType);
+    IDbConnection connection,
+    IDbTransaction transaction,
+    long scanJobId,
+    string jobType,
+    int productLimit);
 
     Task CompleteAsync(
         IDbConnection connection,

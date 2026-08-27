@@ -12,6 +12,8 @@ public class ScanExecutionEntity : BaseEntity
 
     public DateTime? FinishedAt { get; set; }
 
+    public int ProductLimit { get; set; }
+
     public int TotalProducts { get; set; }
 
     public int InsertedProducts { get; set; }

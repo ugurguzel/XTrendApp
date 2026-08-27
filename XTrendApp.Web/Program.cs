@@ -66,6 +66,8 @@ builder.Services.AddScoped<ScanJobService>();
 
 builder.Services.AddScoped<AmazonSearchParser>();
 
+builder.Services.AddScoped<AmazonSearchNavigator>();
+
 builder.Services.AddScoped<AmazonDetailParser>();
 
 builder.Services.AddScoped<AmazonVariationEngine>();

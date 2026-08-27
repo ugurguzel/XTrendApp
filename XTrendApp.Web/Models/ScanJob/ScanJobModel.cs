@@ -17,5 +17,9 @@
         public DateTime? LastRun { get; set; }
 
         public DateTime? NextRun { get; set; }
+
+        public int ProductLimit { get; set; } = 25;
+
+        public int CurrentPage { get; set; } = 1;
     }
 }

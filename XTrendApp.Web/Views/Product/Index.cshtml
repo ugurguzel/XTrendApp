@@ -1,17 +1,24 @@
-﻿@model IEnumerable<XTrendApp.Web.Models.Product.ProductListViewModel>
+﻿@model XTrendApp.Web.Models.Product.ProductListPageViewModel
 
 @{
     ViewData["Title"] = "Products";
 
-    var sortBy = ViewBag.SortBy as string ?? "LastScan";
-    var sortDirection = ViewBag.SortDirection as string ?? "desc";
+    var sortBy =
+        ViewBag.SortBy as string ?? "LastScan";
+
+    var sortDirection =
+        ViewBag.SortDirection as string ?? "desc";
 }
 
+
 <div class="page-header d-print-none mb-3">
+
     <div class="container-xl">
+
         <div class="row align-items-center">
 
             <div class="col">
+
                 <h2 class="page-title">
                     Products
                 </h2>
@@ -19,37 +26,58 @@
                 <div class="text-secondary mt-1">
                     Track product collections and their performance
                 </div>
+
             </div>
 
         </div>
+
     </div>
+
 </div>
 
 
 <div class="page-body">
+
     <div class="container-xl">
 
         <div class="card">
 
+
+            <!-- CARD HEADER -->
+
             <div class="card-header">
+
                 <h3 class="card-title">
                     Product Collections
                 </h3>
 
+
                 <div class="card-actions">
+
                     <span class="text-secondary">
-                        @Model.Count() products
+
+                        @Model.TotalCount
+                        @(Model.TotalCount == 1 ? "product" : "products")
+
                     </span>
+
                 </div>
+
             </div>
 
+
+            <!-- TABLE -->
 
             <div class="table-responsive">
 
                 <table class="table table-vcenter table-hover">
 
                     <thead>
+
                         <tr>
+
+
+                            <!-- IMAGE -->
 
                             <th style="width: 72px;"></th>
 
@@ -57,72 +85,129 @@
                             <!-- PRODUCT -->
 
                             <th>
+
                                 <a href="@Url.Action("Index", new
                                    {
                                        sortBy = "Product",
-                                       sortDirection = sortBy.Equals("Product", StringComparison.OrdinalIgnoreCase)
-                                                                           && sortDirection.Equals("asc", StringComparison.OrdinalIgnoreCase)
+
+                                       sortDirection =
+                                                                           sortBy.Equals(
+                                                                               "Product",
+                                                                               StringComparison.OrdinalIgnoreCase)
+                                                                           &&
+                                                                           sortDirection.Equals(
+                                                                               "asc",
+                                                                               StringComparison.OrdinalIgnoreCase)
                                                                                ? "desc"
-                                                                               : "asc"
+                                                                               : "asc",
+
+                                       page = 1,
+
+                                       pageSize = Model.PageSize
                                    })"
                                    class="table-sort-link">
 
                                     Product
 
-                                    @if (sortBy.Equals("Product", StringComparison.OrdinalIgnoreCase))
+                                    @if (sortBy.Equals(
+                                                                        "Product",
+                                                                        StringComparison.OrdinalIgnoreCase))
                                     {
-                                        <i class="ti ti-chevron-@(sortDirection.Equals("asc", StringComparison.OrdinalIgnoreCase) ? "up" : "down")"></i>
-                                    }
+                                        <i class="ti ti-chevron-@(sortDirection.Equals(
+                                                                                       "asc",
+                                                                                       StringComparison.OrdinalIgnoreCase)
+                                                                                       ? "up"
+                                                                                       : "down")"></i>
+                                                                        }
 
                                 </a>
+
                             </th>
 
 
                             <!-- BRAND -->
 
                             <th>
+
                                 <a href="@Url.Action("Index", new
                                    {
                                        sortBy = "Brand",
-                                       sortDirection = sortBy.Equals("Brand", StringComparison.OrdinalIgnoreCase)
-                                                                           && sortDirection.Equals("asc", StringComparison.OrdinalIgnoreCase)
+
+                                       sortDirection =
+                                                                           sortBy.Equals(
+                                                                               "Brand",
+                                                                               StringComparison.OrdinalIgnoreCase)
+                                                                           &&
+                                                                           sortDirection.Equals(
+                                                                               "asc",
+                                                                               StringComparison.OrdinalIgnoreCase)
                                                                                ? "desc"
-                                                                               : "asc"
+                                                                               : "asc",
+
+                                       page = 1,
+
+                                       pageSize = Model.PageSize
                                    })"
                                    class="table-sort-link">
 
                                     Brand
 
-                                    @if (sortBy.Equals("Brand", StringComparison.OrdinalIgnoreCase))
+                                    @if (sortBy.Equals(
+                                                                        "Brand",
+                                                                        StringComparison.OrdinalIgnoreCase))
                                     {
-                                        <i class="ti ti-chevron-@(sortDirection.Equals("asc", StringComparison.OrdinalIgnoreCase) ? "up" : "down")"></i>
-                                    }
+                                        <i class="ti ti-chevron-@(sortDirection.Equals(
+                                                                                       "asc",
+                                                                                       StringComparison.OrdinalIgnoreCase)
+                                                                                       ? "up"
+                                                                                       : "down")"></i>
+                                                                        }
 
                                 </a>
+
                             </th>
 
 
                             <!-- MARKETPLACE -->
 
                             <th>
+
                                 <a href="@Url.Action("Index", new
                                    {
                                        sortBy = "Marketplace",
-                                       sortDirection = sortBy.Equals("Marketplace", StringComparison.OrdinalIgnoreCase)
-                                                                           && sortDirection.Equals("asc", StringComparison.OrdinalIgnoreCase)
+
+                                       sortDirection =
+                                                                           sortBy.Equals(
+                                                                               "Marketplace",
+                                                                               StringComparison.OrdinalIgnoreCase)
+                                                                           &&
+                                                                           sortDirection.Equals(
+                                                                               "asc",
+                                                                               StringComparison.OrdinalIgnoreCase)
                                                                                ? "desc"
-                                                                               : "asc"
+                                                                               : "asc",
+
+                                       page = 1,
+
+                                       pageSize = Model.PageSize
                                    })"
                                    class="table-sort-link">
 
                                     Marketplace
 
-                                    @if (sortBy.Equals("Marketplace", StringComparison.OrdinalIgnoreCase))
+                                    @if (sortBy.Equals(
+                                                                        "Marketplace",
+                                                                        StringComparison.OrdinalIgnoreCase))
                                     {
-                                        <i class="ti ti-chevron-@(sortDirection.Equals("asc", StringComparison.OrdinalIgnoreCase) ? "up" : "down")"></i>
-                                    }
+                                        <i class="ti ti-chevron-@(sortDirection.Equals(
+                                                                                       "asc",
+                                                                                       StringComparison.OrdinalIgnoreCase)
+                                                                                       ? "up"
+                                                                                       : "down")"></i>
+                                                                        }
 
                                 </a>
+
                             </th>
 
 
@@ -133,19 +218,36 @@
                                 <a href="@Url.Action("Index", new
                                    {
                                        sortBy = "Variations",
-                                       sortDirection = sortBy.Equals("Variations", StringComparison.OrdinalIgnoreCase)
-                                                                           && sortDirection.Equals("asc", StringComparison.OrdinalIgnoreCase)
+
+                                       sortDirection =
+                                                                           sortBy.Equals(
+                                                                               "Variations",
+                                                                               StringComparison.OrdinalIgnoreCase)
+                                                                           &&
+                                                                           sortDirection.Equals(
+                                                                               "asc",
+                                                                               StringComparison.OrdinalIgnoreCase)
                                                                                ? "desc"
-                                                                               : "asc"
+                                                                               : "asc",
+
+                                       page = 1,
+
+                                       pageSize = Model.PageSize
                                    })"
                                    class="table-sort-link justify-content-center">
 
                                     Variations
 
-                                    @if (sortBy.Equals("Variations", StringComparison.OrdinalIgnoreCase))
+                                    @if (sortBy.Equals(
+                                                                        "Variations",
+                                                                        StringComparison.OrdinalIgnoreCase))
                                     {
-                                        <i class="ti ti-chevron-@(sortDirection.Equals("asc", StringComparison.OrdinalIgnoreCase) ? "up" : "down")"></i>
-                                    }
+                                        <i class="ti ti-chevron-@(sortDirection.Equals(
+                                                                                       "asc",
+                                                                                       StringComparison.OrdinalIgnoreCase)
+                                                                                       ? "up"
+                                                                                       : "down")"></i>
+                                                                        }
 
                                 </a>
 
@@ -159,19 +261,36 @@
                                 <a href="@Url.Action("Index", new
                                    {
                                        sortBy = "Rating",
-                                       sortDirection = sortBy.Equals("Rating", StringComparison.OrdinalIgnoreCase)
-                                                                           && sortDirection.Equals("asc", StringComparison.OrdinalIgnoreCase)
+
+                                       sortDirection =
+                                                                           sortBy.Equals(
+                                                                               "Rating",
+                                                                               StringComparison.OrdinalIgnoreCase)
+                                                                           &&
+                                                                           sortDirection.Equals(
+                                                                               "asc",
+                                                                               StringComparison.OrdinalIgnoreCase)
                                                                                ? "desc"
-                                                                               : "asc"
+                                                                               : "asc",
+
+                                       page = 1,
+
+                                       pageSize = Model.PageSize
                                    })"
                                    class="table-sort-link justify-content-center">
 
                                     Rating
 
-                                    @if (sortBy.Equals("Rating", StringComparison.OrdinalIgnoreCase))
+                                    @if (sortBy.Equals(
+                                                                        "Rating",
+                                                                        StringComparison.OrdinalIgnoreCase))
                                     {
-                                        <i class="ti ti-chevron-@(sortDirection.Equals("asc", StringComparison.OrdinalIgnoreCase) ? "up" : "down")"></i>
-                                    }
+                                        <i class="ti ti-chevron-@(sortDirection.Equals(
+                                                                                       "asc",
+                                                                                       StringComparison.OrdinalIgnoreCase)
+                                                                                       ? "up"
+                                                                                       : "down")"></i>
+                                                                        }
 
                                 </a>
 
@@ -185,19 +304,36 @@
                                 <a href="@Url.Action("Index", new
                                    {
                                        sortBy = "Reviews",
-                                       sortDirection = sortBy.Equals("Reviews", StringComparison.OrdinalIgnoreCase)
-                                                                           && sortDirection.Equals("asc", StringComparison.OrdinalIgnoreCase)
+
+                                       sortDirection =
+                                                                           sortBy.Equals(
+                                                                               "Reviews",
+                                                                               StringComparison.OrdinalIgnoreCase)
+                                                                           &&
+                                                                           sortDirection.Equals(
+                                                                               "asc",
+                                                                               StringComparison.OrdinalIgnoreCase)
                                                                                ? "desc"
-                                                                               : "asc"
+                                                                               : "asc",
+
+                                       page = 1,
+
+                                       pageSize = Model.PageSize
                                    })"
                                    class="table-sort-link justify-content-end">
 
                                     Reviews
 
-                                    @if (sortBy.Equals("Reviews", StringComparison.OrdinalIgnoreCase))
+                                    @if (sortBy.Equals(
+                                                                        "Reviews",
+                                                                        StringComparison.OrdinalIgnoreCase))
                                     {
-                                        <i class="ti ti-chevron-@(sortDirection.Equals("asc", StringComparison.OrdinalIgnoreCase) ? "up" : "down")"></i>
-                                    }
+                                        <i class="ti ti-chevron-@(sortDirection.Equals(
+                                                                                       "asc",
+                                                                                       StringComparison.OrdinalIgnoreCase)
+                                                                                       ? "up"
+                                                                                       : "down")"></i>
+                                                                        }
 
                                 </a>
 
@@ -211,36 +347,57 @@
                                 <a href="@Url.Action("Index", new
                                    {
                                        sortBy = "LastScan",
-                                       sortDirection = sortBy.Equals("LastScan", StringComparison.OrdinalIgnoreCase)
-                                                                           && sortDirection.Equals("asc", StringComparison.OrdinalIgnoreCase)
+
+                                       sortDirection =
+                                                                           sortBy.Equals(
+                                                                               "LastScan",
+                                                                               StringComparison.OrdinalIgnoreCase)
+                                                                           &&
+                                                                           sortDirection.Equals(
+                                                                               "asc",
+                                                                               StringComparison.OrdinalIgnoreCase)
                                                                                ? "desc"
-                                                                               : "asc"
+                                                                               : "asc",
+
+                                       page = 1,
+
+                                       pageSize = Model.PageSize
                                    })"
                                    class="table-sort-link">
 
                                     Last Scan
 
-                                    @if (sortBy.Equals("LastScan", StringComparison.OrdinalIgnoreCase))
+                                    @if (sortBy.Equals(
+                                                                        "LastScan",
+                                                                        StringComparison.OrdinalIgnoreCase))
                                     {
-                                        <i class="ti ti-chevron-@(sortDirection.Equals("asc", StringComparison.OrdinalIgnoreCase) ? "up" : "down")"></i>
-                                    }
+                                        <i class="ti ti-chevron-@(sortDirection.Equals(
+                                                                                       "asc",
+                                                                                       StringComparison.OrdinalIgnoreCase)
+                                                                                       ? "up"
+                                                                                       : "down")"></i>
+                                                                        }
 
                                 </a>
 
                             </th>
 
 
+                            <!-- ACTION -->
+
                             <th style="width: 50px;"></th>
 
                         </tr>
+
                     </thead>
 
 
                     <tbody>
 
-                        @foreach (var item in Model)
+                        @foreach (var item in Model.Products)
                         {
                             <tr>
+
 
                                 <!-- IMAGE -->
 
@@ -255,33 +412,38 @@
                                     else
                                     {
                                         <span class="avatar avatar-md rounded bg-secondary-lt">
+
                                             <i class="ti ti-photo fs-2 text-secondary"></i>
+
                                         </span>
                                     }
 
-                                </td>
+                            </td>
 
 
-                                <!-- PRODUCT -->
+                            <!-- PRODUCT -->
 
-                                <td>
+                            <td>
 
-                                    <div class="d-flex flex-column">
+                                <div class="d-flex flex-column">
 
-                                        <a href="/Product/Detail/@item.Id"
-                                           class="text-reset fw-semibold product-name"
-                                           title="@item.Name">
+                                    <a href="/Product/Detail/@item.Id"
+                                       class="text-reset fw-semibold product-name"
+                                       title="@item.Name">
 
-                                            @item.Name
+                                        @item.Name
 
-                                        </a>
+                                    </a>
 
-                                        <div class="text-secondary small mt-1">
+                                    <div class="text-secondary small mt-1">
 
-                                            @item.VariationCount
-                                            @(item.VariationCount == 1 ? "variation" : "variations")
+                                        @item.VariationCount
 
-                                        </div>
+                                        @(item.VariationCount == 1
+                                                                                ? "variation"
+                                                                                : "variations")
+
+                                    </div>
 
                                     </div>
 
@@ -292,7 +454,7 @@
 
                                 <td>
 
-                                    @if (!string.IsNullOrWhiteSpace(item.Brand))
+                                @if (!string.IsNullOrWhiteSpace(item.Brand))
                                     {
                                         <span class="fw-medium">
                                             @item.Brand
@@ -317,7 +479,9 @@
                                         <div class="d-flex align-items-center gap-2">
 
                                             <span class="avatar avatar-xs">
+
                                                 <i class="ti ti-shopping-cart"></i>
+
                                             </span>
 
                                             <span>
@@ -341,7 +505,9 @@
                                 <td class="text-center">
 
                                     <span class="badge bg-yellow-lt">
+
                                         @item.VariationCount
+
                                     </span>
 
                                 </td>
@@ -360,7 +526,9 @@
                                             </span>
 
                                             <span class="fw-medium">
+
                                                 @item.Rating.Value.ToString("0.0")
+
                                             </span>
 
                                         </span>
@@ -382,7 +550,9 @@
                                     @if (item.ReviewCount.HasValue)
                                     {
                                         <span class="fw-medium">
+
                                             @item.ReviewCount.Value.ToString("N0")
+
                                         </span>
                                     }
                                     else
@@ -404,11 +574,15 @@
                                         <div class="d-flex flex-column">
 
                                             <span class="fw-medium">
+
                                                 @item.LastCapturedAt.Value.ToString("dd.MM.yyyy")
+
                                             </span>
 
                                             <span class="text-secondary small">
+
                                                 @item.LastCapturedAt.Value.ToString("HH:mm")
+
                                             </span>
 
                                         </div>
@@ -446,9 +620,162 @@
 
             </div>
 
+
+            <!-- PAGINATION -->
+            @if (Model.TotalPages > 1)
+            {
+                <div class="card-footer">
+
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+
+
+                        <!-- RESULT INFO -->
+
+                        <div class="text-secondary">
+
+                            @{
+
+                                var firstItem =
+                                ((Model.Page - 1) * Model.PageSize) + 1;
+
+                                var lastItem =
+                                Math.Min(
+                                Model.Page * Model.PageSize,
+                                Model.TotalCount);
+
+                            }
+
+                            Showing
+
+                            <strong>
+                                @firstItem
+                            </strong>
+
+                            to
+
+                            <strong>
+                                @lastItem
+                            </strong>
+
+                            of
+
+                            <strong>
+                                @Model.TotalCount
+                            </strong>
+
+                            products
+
+                        </div>
+
+
+                        <!-- PAGINATION -->
+
+                        <ul class="pagination mb-0">
+
+
+                            <!-- PREVIOUS -->
+
+                            <li class="page-item @(Model.HasPreviousPage ? "" : "disabled")">
+
+                                @if (Model.HasPreviousPage)
+                                {
+                                    <a class="page-link"
+                                       href="@Url.Action("Index", new
+                                       {
+                                           page = Model.Page - 1,
+                                           pageSize = Model.PageSize,
+                                           sortBy = sortBy,
+                                           sortDirection = sortDirection
+                                       })">
+
+                                <i class="ti ti-chevron-left"></i>
+
+                                        Previous
+
+                                    </a>
+                                                        }
+                                else
+                                {
+                                    <span class="page-link">
+
+                                        <i class="ti ti-chevron-left"></i>
+
+                                        Previous
+
+                                    </span>
+                                }
+
+                            </li>
+
+
+                            <!-- PAGE NUMBERS -->
+                            @for (var i = 1; i <= Model.TotalPages; i++)
+                            {
+                                <li class="page-item @(i == Model.Page ? "active" : "")">
+
+                                    <a class="page-link"
+                                       href="@Url.Action("Index", new
+                                       {
+                                           page = i,
+                                           pageSize = Model.PageSize,
+                                           sortBy = sortBy,
+                                           sortDirection = sortDirection
+                                       })">
+
+                                @i
+
+                                    </a>
+
+                                </li>
+                                                }
+
+
+                            <!-- NEXT -->
+
+                            <li class="page-item @(Model.HasNextPage ? "" : "disabled")">
+
+                                @if (Model.HasNextPage)
+                                {
+                                    <a class="page-link"
+                                       href="@Url.Action("Index", new
+                                       {
+                                           page = Model.Page + 1,
+                                           pageSize = Model.PageSize,
+                                           sortBy = sortBy,
+                                           sortDirection = sortDirection
+                                       })">
+
+                                Next
+
+                                        <i class="ti ti-chevron-right"></i>
+
+                                    </a>
+                                                        }
+                                else
+                                {
+                                    <span class="page-link">
+
+                                        Next
+
+                                        <i class="ti ti-chevron-right"></i>
+
+                                    </span>
+                                }
+
+                            </li>
+
+                        </ul>
+
+                    </div>
+
+                </div>
+            }
+
+
         </div>
 
     </div>
+
 </div>
 
 
@@ -463,9 +790,11 @@
         max-width: 520px;
     }
 
+
     .table td {
         vertical-align: middle;
     }
+
 
     .table-sort-link {
         display: inline-flex;
@@ -475,9 +804,11 @@
         text-decoration: none;
     }
 
+
         .table-sort-link:hover {
             color: var(--tblr-primary);
         }
+
 
         .table-sort-link i {
             font-size: 0.9rem;

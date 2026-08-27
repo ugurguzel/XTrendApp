@@ -47,5 +47,51 @@ namespace XTrendApp.Web.Controllers.Administration
                 });
             }
         }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateProductLimit(
+    int id,
+    int productLimit)
+        {
+            try
+            {
+                if (productLimit < 1 || productLimit > 100)
+                {
+                    return Json(new
+                    {
+                        success = false,
+                        message = "Product limit must be between 1 and 100."
+                    });
+                }
+
+                var updated =
+                    await _scanJobService.UpdateProductLimitAsync(
+                        id,
+                        productLimit);
+
+                if (!updated)
+                {
+                    return Json(new
+                    {
+                        success = false,
+                        message = "Scan job could not be updated."
+                    });
+                }
+
+                return Json(new
+                {
+                    success = true,
+                    message = "Product limit updated successfully."
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+        }
     }
 }

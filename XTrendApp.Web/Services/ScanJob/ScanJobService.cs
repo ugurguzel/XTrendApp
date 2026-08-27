@@ -35,36 +35,37 @@ namespace XTrendApp.Web.Services.ScanJob
 
         public async Task RunAsync(string code)
         {
-            long scanJobId;
+            var scanJob =
+    _scanJobRepository.GetAll()
+        .FirstOrDefault(x =>
+            x.Code.Equals(
+                code,
+                StringComparison.OrdinalIgnoreCase));
 
-            AmazonMarket? market = null;
-
-            switch (code)
+            if (scanJob == null)
             {
-                case "AMAZON_US":
-
-                    scanJobId = 1;
-                    market = AmazonMarket.US;
-
-                    break;
-
-                case "AMAZON_UK":
-
-                    scanJobId = 2;
-                    market = AmazonMarket.UK;
-
-                    break;
-
-                case "WAYFAIR":
-
-                    throw new NotImplementedException();
-
-                default:
-
-                    throw new Exception("Unknown scan job.");
+                throw new Exception(
+                    $"Unknown scan job: {code}");
             }
 
+            var scanJobId = scanJob.Id;
 
+            AmazonMarket? market = code switch
+            {
+                "AMAZON_US" => AmazonMarket.US,
+                "AMAZON_UK" => AmazonMarket.UK,
+                "WAYFAIR" => null,
+                _ => null
+            };
+
+            if (market == null)
+            {
+                throw new NotImplementedException(
+                    $"Scan source is not implemented: {code}");
+            }
+
+            var productLimit = scanJob.ProductLimit;
+        
             using var connection = _context.CreateConnection();
 
             connection.Open();
@@ -77,10 +78,11 @@ namespace XTrendApp.Web.Services.ScanJob
             try
             {
                 executionId = await _scanExecutionRepository.StartAsync(
-                    connection,
-                    transaction,
-                    scanJobId,
-                    code);
+    connection,
+    transaction,
+    scanJobId,
+    code,
+    productLimit);
 
                 transaction.Commit();
             }
@@ -97,7 +99,8 @@ namespace XTrendApp.Web.Services.ScanJob
             {
                 scanResult = await _amazonConnector.RunAsync(
                     market.Value,
-                    executionId);
+                    executionId,
+                    productLimit);
             }
             catch
             {
@@ -151,6 +154,18 @@ namespace XTrendApp.Web.Services.ScanJob
                 completeTransaction.Rollback();
                 throw;
             }
+        }
+
+        public async Task<bool> UpdateProductLimitAsync(
+    int id,
+    int productLimit)
+        {
+            if (productLimit < 1 || productLimit > 100)
+                return false;
+
+            return await _scanJobRepository.UpdateProductLimitAsync(
+                id,
+                productLimit);
         }
     }
 }

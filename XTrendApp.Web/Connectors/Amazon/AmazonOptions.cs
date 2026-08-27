@@ -8,6 +8,8 @@
 
         public int MaxPage { get; set; } = 1;
 
+        //public int MaxProducts { get; set; } = 50;
+
         public bool Headless { get; set; }
 
         public string SessionFile { get; set; } = "amazon-us.json";

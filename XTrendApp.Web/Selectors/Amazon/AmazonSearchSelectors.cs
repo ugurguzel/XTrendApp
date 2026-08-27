@@ -25,5 +25,7 @@
         public const string BoughtLastMonth = ".a-size-base.a-color-secondary";
 
         public const string VariationCount = ".s-variation-options-link";
+
+        public const string NextPage = "a.s-pagination-next";
     }
 }

@@ -1,40 +1,102 @@
-﻿using XTrendApp.Web.Models.ScanJob;
+﻿using Dapper;
+using XTrendApp.Web.Data;
+using XTrendApp.Web.Models.ScanJob;
 
 namespace XTrendApp.Web.Repositories.ScanJob
 {
     public class ScanJobRepository
     {
+        private readonly DapperContext _context;
+
+        public ScanJobRepository(DapperContext context)
+        {
+            _context = context;
+        }
+
+
         public List<ScanJobModel> GetAll()
         {
-            return new List<ScanJobModel>
-            {
-                new ScanJobModel
-                {
-                    Id = 1,
-                    Code = "AMAZON_US",
-                    Name = "Amazon US",
-                    Source = "Amazon",
-                    IsEnabled = true
-                },
+            using var connection = _context.CreateConnection();
 
-                new ScanJobModel
-                {
-                    Id = 2,
-                    Code = "AMAZON_UK",
-                    Name = "Amazon UK",
-                    Source = "Amazon",
-                    IsEnabled = true
-                },
+            const string sql = """
+                SELECT
+                    Id,
+                    JobType AS Code,
+                    JobType AS Name,
+                    CASE
+                        WHEN JobType LIKE 'AMAZON_%'
+                            THEN 'Amazon'
+                        WHEN JobType = 'WAYFAIR'
+                            THEN 'Wayfair'
+                        ELSE JobType
+                    END AS Source,
+                    CAST(1 AS bit) AS IsEnabled,
+                    ProductLimit
+                FROM ScanJob
+                ORDER BY Id;
+                """;
 
-                new ScanJobModel
+            return connection
+                .Query<ScanJobModel>(sql)
+                .ToList();
+        }
+
+
+        public async Task<ScanJobModel?> GetByIdAsync(
+            long id)
+        {
+            using var connection = _context.CreateConnection();
+
+            const string sql = """
+                SELECT
+                    Id,
+                    JobType AS Code,
+                    JobType AS Name,
+                    CASE
+                        WHEN JobType LIKE 'AMAZON_%'
+                            THEN 'Amazon'
+                        WHEN JobType = 'WAYFAIR'
+                            THEN 'Wayfair'
+                        ELSE JobType
+                    END AS Source,
+                    CAST(1 AS bit) AS IsEnabled,
+                    ProductLimit
+                FROM ScanJob
+                WHERE Id = @Id;
+                """;
+
+            return await connection.QueryFirstOrDefaultAsync<ScanJobModel>(
+                sql,
+                new
                 {
-                    Id = 3,
-                    Code = "WAYFAIR",
-                    Name = "Wayfair",
-                    Source = "Wayfair",
-                    IsEnabled = true
-                }
-            };
+                    Id = id
+                });
+        }
+
+        public async Task<bool> UpdateProductLimitAsync(
+    int id,
+    int productLimit)
+        {
+            if (productLimit < 1 || productLimit > 100)
+                return false;
+
+            using var connection = _context.CreateConnection();
+
+            const string sql = """
+        UPDATE ScanJob
+        SET ProductLimit = @ProductLimit
+        WHERE Id = @Id;
+        """;
+
+            var affectedRows = await connection.ExecuteAsync(
+                sql,
+                new
+                {
+                    Id = id,
+                    ProductLimit = productLimit
+                });
+
+            return affectedRows > 0;
         }
     }
 }
