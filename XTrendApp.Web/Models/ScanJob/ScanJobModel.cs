@@ -20,6 +20,8 @@
 
         public int ProductLimit { get; set; } = 25;
 
+        public int ProductsPerRun { get; set; } = 24;
+
         public int CurrentPage { get; set; } = 1;
     }
 }
