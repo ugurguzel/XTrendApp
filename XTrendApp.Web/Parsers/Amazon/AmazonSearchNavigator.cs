@@ -1,5 +1,5 @@
 ﻿using Microsoft.Playwright;
-using XTrendApp.Web.Common;
+using XTrendApp.Web.Models.Common;
 using XTrendApp.Web.Selectors.Amazon;
 
 namespace XTrendApp.Web.Parsers.Amazon;

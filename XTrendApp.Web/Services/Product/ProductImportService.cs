@@ -1,6 +1,6 @@
 ﻿using System.Data;
 using System.Drawing;
-using XTrendApp.Web.Common;
+using XTrendApp.Web.Models.Common;
 using XTrendApp.Web.Data;
 using XTrendApp.Web.Models.Amazon;
 using XTrendApp.Web.Models.Entities;

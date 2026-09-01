@@ -2,7 +2,8 @@
 using System.Buffers.Text;
 using XTrendApp.Web.Connectors.Amazon;
 using XTrendApp.Web.Models.Amazon;
-using XTrendApp.Web.Common;
+using XTrendApp.Web.Models.Common;
+
 
 namespace XTrendApp.Web.Engines.Amazon
 {

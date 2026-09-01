@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 using Microsoft.Playwright;
-using XTrendApp.Web.Common;
+using XTrendApp.Web.Models.Common;
 using XTrendApp.Web.Models.Amazon;
 
 namespace XTrendApp.Web.Engines.Amazon;

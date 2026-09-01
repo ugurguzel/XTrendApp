@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Options;
 using Microsoft.Playwright;
-using XTrendApp.Web.Common;
+using XTrendApp.Web.Models.Common;
 using XTrendApp.Web.Engines.Amazon;
 using XTrendApp.Web.Models.Amazon;
 using XTrendApp.Web.Models.ScanJob;
@@ -40,9 +40,10 @@ namespace XTrendApp.Web.Connectors.Amazon
         }
 
         public async Task<ScanExecutionResult> RunAsync(
-    AmazonMarket market,
-    long scanExecutionId,
-    int productLimit)
+            AmazonMarket market,
+            long scanExecutionId,
+            int productLimit,
+            int currentPage)
         {
             string baseUrl;
             string sessionFile;
@@ -92,155 +93,126 @@ namespace XTrendApp.Web.Connectors.Amazon
 
             var page = await context.NewPageAsync();
 
-            await page.GotoAsync(
-    searchUrl,
+            //--------------------------------------------------
+            // OPEN AMAZON SEARCH PAGE
+            //--------------------------------------------------
 
-    new PageGotoOptions
-    {
-        WaitUntil = WaitUntilState.DOMContentLoaded
-    });
+            await page.GotoAsync(
+                searchUrl,
+                new PageGotoOptions
+                {
+                    WaitUntil = WaitUntilState.DOMContentLoaded
+                });
 
             await page.Locator(AmazonSearchSelectors.ProductCard)
-    .First
+                .First
+                .WaitForAsync(
+                    new LocatorWaitForOptions
+                    {
+                        State = WaitForSelectorState.Visible,
+                        Timeout = 15000
+                    });
 
-    .WaitForAsync(new LocatorWaitForOptions
-    {
-        State = WaitForSelectorState.Visible,
-        Timeout = 15000
-    });
+            var searchPage = 1;
+
+            // --------------------------------------------------
+            // MOVE TO REQUESTED SEARCH PAGE
+            // --------------------------------------------------
+
+            while (searchPage < currentPage)
+            {
+                Logger.Info("");
+                Logger.Info(
+                    $"Moving to Amazon Search Page {searchPage + 1}...");
+
+                var movedToNextPage =
+                    await _searchNavigator.GoToNextPageAsync(page);
+
+                if (!movedToNextPage)
+                {
+                    throw new InvalidOperationException(
+                        $"Amazon Search Page {currentPage} could not be reached.");
+                }
+
+                searchPage++;
+
+                await page.Locator(AmazonSearchSelectors.ProductCard)
+                    .First
+                    .WaitForAsync(
+                        new LocatorWaitForOptions
+                        {
+                            State = WaitForSelectorState.Visible,
+                            Timeout = 15000
+                        });
+            }
+
+            // --------------------------------------------------
+            // CURRENT SEARCH PAGE
+            // --------------------------------------------------
+
+            Logger.Info("");
+            Logger.Info(
+                $"SEARCH PAGE {searchPage}");
+
+            var pageProducts =
+                await _searchParser.ParseAsync(
+                    page,
+                    baseUrl);
+
+            Logger.Info(
+                $"Page {searchPage} Products : {pageProducts.Count}");
 
             var products = new List<AmazonSearchModel>();
 
             var seenAsins = new HashSet<string>(
                 StringComparer.OrdinalIgnoreCase);
 
-            var searchPage = 1;
-
-            while (products.Count < productLimit)
+            foreach (var product in pageProducts)
             {
-                Logger.Info("");
-                Logger.Info(
-                    $"SEARCH PAGE {searchPage}");
-
-                var pageProducts =
-                    await _searchParser.ParseAsync(
-                        page,
-                        baseUrl);
-
-                Logger.Info(
-                    $"Page {searchPage} Products : {pageProducts.Count}");
-
-
-                var addedThisPage = 0;
-
-
-                foreach (var product in pageProducts)
+                if (string.IsNullOrWhiteSpace(product.Asin))
                 {
-                    if (string.IsNullOrWhiteSpace(product.Asin))
-                    {
-                        Logger.Info(
-                            "Search product skipped: ASIN not found.");
+                    Logger.Info(
+                        "Search product skipped: ASIN not found.");
 
-                        continue;
-                    }
+                    continue;
+                }
 
-                    if (!seenAsins.Add(product.Asin))
-                    {
-                        Logger.Debug(
-                            $"Duplicate ASIN skipped : {product.Asin}");
-
-                        continue;
-                    }
-
-                    product.CurrencyCode = market switch
-                    {
-                        AmazonMarket.US => "USD",
-                        AmazonMarket.UK => "GBP",
-                        _ => string.Empty
-                    };
-
-                    products.Add(product);
-
-                    addedThisPage++;
-
+                if (!seenAsins.Add(product.Asin))
+                {
                     Logger.Debug(
-                        $"Product added : {product.Asin}");
+                        $"Duplicate ASIN skipped : {product.Asin}");
 
-                    if (products.Count >= productLimit)
-                        break;
+                    continue;
                 }
 
-                Logger.Info(
-                    $"Unique Products Collected : {products.Count}/{productLimit}");
+                product.CurrencyCode = market switch
+                {
+                    AmazonMarket.US => "USD",
+                    AmazonMarket.UK => "GBP",
+                    _ => string.Empty
+                };
+
+                products.Add(product);
+
+                Logger.Debug(
+                    $"Product added : {product.Asin}");
 
                 if (products.Count >= productLimit)
-                {
-                    Logger.Info(
-                        $"Maximum product target reached : {productLimit}");
-
                     break;
-                }
-
-
-                Logger.Info(
-    $"Unique Products Collected : {products.Count}/{productLimit}");
-
-
-                // --------------------------------------------------
-                // TARGET REACHED
-                // --------------------------------------------------
-
-                if (products.Count >= productLimit)
-                {
-                    Logger.Info(
-                        $"Maximum product target reached : {productLimit}");
-
-                    break;
-                }
-
-
-                // --------------------------------------------------
-                // NO NEW PRODUCTS
-                // --------------------------------------------------
-
-                if (addedThisPage == 0)
-                {
-                    Logger.Info(
-                        "No new products found on current search page.");
-
-                    break;
-                }
-
-
-                // --------------------------------------------------
-                // NEXT PAGE
-                // --------------------------------------------------
-
-                Logger.Info(
-                    $"Moving to Amazon Search Page {searchPage + 1}...");
-
-
-                var movedToNextPage =
-                    await _searchNavigator.GoToNextPageAsync(page);
-
-
-                if (!movedToNextPage)
-                {
-                    Logger.Info(
-                        "No more Amazon search pages available.");
-
-                    break;
-                }
-
-
-                searchPage++;
             }
 
+            Logger.Info(
+                $"Unique Products Collected : {products.Count}/{productLimit}");
+
+            if (products.Count >= productLimit)
+            {
+                Logger.Info(
+                    $"Maximum product target reached : {productLimit}");
+            }
 
             Logger.Info("");
             Logger.Info(
                 $"Products Found : {products.Count}");
-
 
             //--------------------------------------------------
             // DETAIL PARSER
@@ -255,9 +227,14 @@ namespace XTrendApp.Web.Connectors.Amazon
                 try
                 {
                     Logger.Info("");
-                    Logger.Info("──────────────────────────────────────────────────────────────────────────────");
-                    Logger.Info($"PROCESSING PRODUCT : {product.Asin}");
-                    Logger.Info("──────────────────────────────────────────────────────────────────────────────");
+                    Logger.Info(
+                        "──────────────────────────────────────────────────────────────────────────────");
+
+                    Logger.Info(
+                        $"PROCESSING PRODUCT : {product.Asin}");
+
+                    Logger.Info(
+                        "──────────────────────────────────────────────────────────────────────────────");
 
                     //--------------------------------------------------
                     // PRODUCT PAGE
@@ -265,11 +242,24 @@ namespace XTrendApp.Web.Connectors.Amazon
 
                     productPage = await context.NewPageAsync();
 
+                    //Logger.Info(
+                    //    $"PRODUCT NAVIGATION : {baseUrl}/dp/{product.Asin}");
+
+                    //await productPage.GotoAsync(
+                    //    $"{baseUrl}/dp/{product.Asin}",
+                    //    new PageGotoOptions
+                    //    {
+                    //        WaitUntil = WaitUntilState.DOMContentLoaded
+                    //    });
+
+                    var productUrl =
+    $"{baseUrl}/dp/{product.Asin}?th=1";
+
                     Logger.Info(
-                        $"PRODUCT NAVIGATION : {baseUrl}/dp/{product.Asin}");
+                        $"PRODUCT NAVIGATION : {productUrl}");
 
                     await productPage.GotoAsync(
-                        $"{baseUrl}/dp/{product.Asin}",
+                        productUrl,
                         new PageGotoOptions
                         {
                             WaitUntil = WaitUntilState.DOMContentLoaded
@@ -297,11 +287,12 @@ namespace XTrendApp.Web.Connectors.Amazon
                     // VARIATION ENGINE
                     //--------------------------------------------------
 
-                    var variation = await _variationEngine.ParseAsync(
-                        productPage,
-                        detail,
-                        baseUrl,
-                        market);
+                    var variation =
+                        await _variationEngine.ParseAsync(
+                            productPage,
+                            detail,
+                            baseUrl,
+                            market);
 
                     //--------------------------------------------------
                     // PRODUCT IMPORT
@@ -392,15 +383,30 @@ namespace XTrendApp.Web.Connectors.Amazon
                 }
             }
 
+            //--------------------------------------------------
+            // CLOSE BROWSER
+            //--------------------------------------------------
+
             await browser.CloseAsync();
 
-            Logger.Success("");
-            Logger.Success("══════════════════════════════════════════════════════════════════════════════");
-            Logger.Success($" AMAZON {market} COMPLETED");
-            Logger.Success("══════════════════════════════════════════════════════════════════════════════");
-            Logger.Success($"Products Processed : {products.Count}");
-            Logger.Success("");
+            //--------------------------------------------------
+            // COMPLETED
+            //--------------------------------------------------
 
+            Logger.Success("");
+            Logger.Success(
+                "══════════════════════════════════════════════════════════════════════════════");
+
+            Logger.Success(
+                $" AMAZON {market} COMPLETED");
+
+            Logger.Success(
+                "══════════════════════════════════════════════════════════════════════════════");
+
+            Logger.Success(
+                $"Products Processed : {products.Count}");
+
+            Logger.Success("");
 
             return scanResult;
         }

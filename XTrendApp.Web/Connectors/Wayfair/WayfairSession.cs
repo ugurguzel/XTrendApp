@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
 using Microsoft.Playwright;
 using Microsoft.AspNetCore.Hosting;
-using XTrendApp.Web.Common;
+using XTrendApp.Web.Models.Common;
 
 namespace XTrendApp.Web.Connectors.Wayfair
 {

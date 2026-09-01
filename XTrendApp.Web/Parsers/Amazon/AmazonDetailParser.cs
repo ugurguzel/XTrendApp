@@ -1,6 +1,6 @@
 ﻿using Microsoft.Playwright;
 using XTrendApp.Web.Models.Amazon;
-using XTrendApp.Web.Common;
+using XTrendApp.Web.Models.Common;
 
 public sealed class AmazonDetailParser
 {

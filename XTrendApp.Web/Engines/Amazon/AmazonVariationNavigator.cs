@@ -1,7 +1,8 @@
 ﻿using Microsoft.Playwright;
 using System.Text.RegularExpressions;
-using XTrendApp.Web.Common;
 using XTrendApp.Web.Models.Amazon;
+using XTrendApp.Web.Models.Common;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Model;
 
 namespace XTrendApp.Web.Engines.Amazon;
 
@@ -14,12 +15,25 @@ public class AmazonVariationNavigator
     {
         Logger.Debug($"Selecting Size : {size.Name}");
 
+        //await page.GotoAsync(
+        //    $"{baseUrl}/dp/{size.Asin}",
+        //    new PageGotoOptions
+        //    {
+        //        WaitUntil = WaitUntilState.DOMContentLoaded,
+        //        Timeout = 60000
+        //    });
+
+        var variationUrl =
+    $"{baseUrl}/dp/{size.Asin}?th=1";
+
+        Logger.Info(
+            $"VARIATION NAVIGATION : {variationUrl}");
+
         await page.GotoAsync(
-            $"{baseUrl}/dp/{size.Asin}",
+            variationUrl,
             new PageGotoOptions
             {
-                WaitUntil = WaitUntilState.DOMContentLoaded,
-                Timeout = 60000
+                WaitUntil = WaitUntilState.DOMContentLoaded
             });
 
         // Sayfanın tamamen oturması için kısa bekleme

@@ -1,7 +1,7 @@
 ﻿using Microsoft.Playwright;
 using XTrendApp.Web.Connectors.Amazon;
 using XTrendApp.Web.Models.Amazon;
-using XTrendApp.Web.Common;
+using XTrendApp.Web.Models.Common;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 

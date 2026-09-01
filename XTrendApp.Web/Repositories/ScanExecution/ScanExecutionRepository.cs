@@ -132,4 +132,5 @@ public class ScanExecutionRepository : IScanExecutionRepository
                 Id = executionId
             });
     }
+
 }

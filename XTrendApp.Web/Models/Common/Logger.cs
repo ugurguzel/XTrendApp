@@ -1,4 +1,4 @@
-namespace XTrendApp.Web.Common;
+namespace XTrendApp.Web.Models.Common;
 
 public static class Logger
 {
